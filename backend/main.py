@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Form
+from fastapi import FastAPI, Depends, HTTPException, status, Form, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List
 from datetime import timedelta
@@ -6,7 +6,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import models, schemas, crud, auth, database
 
 models.Base.metadata.create_all(bind=database.engine)
-
 
 origins = [
     "http://localhost:8080",  # your frontend URL
@@ -23,11 +22,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-
-
-
 
 # Signup
 @app.post("/signup", response_model=schemas.UserResponse)
@@ -59,7 +53,6 @@ async def signin(
     )
     return schemas.Token(access_token=access_token, token_type="bearer")
 
-
 # Get all users
 @app.get("/users", response_model=list[schemas.UserResponse])
 def get_all_users(db: Session = Depends(auth.get_db)):
@@ -68,16 +61,12 @@ def get_all_users(db: Session = Depends(auth.get_db)):
         raise HTTPException(status_code=404, detail="No users found")
     return users
 
-
-
-
 # Protected route
 @app.get("/users/me", response_model=schemas.UserResponse)
 async def read_users_me(
     current_user: Annotated[schemas.UserResponse, Depends(auth.get_current_active_user)]
 ):
     return current_user
-
 
 @app.put("/users/me", response_model=schemas.UserResponse)
 async def update_my_profile(
@@ -91,9 +80,6 @@ async def update_my_profile(
     updated_user = crud.update_user(db, db_user, updates)
     return updated_user
 
-
-
-
 # -------------------------
 # PRODUCTS ROUTE
 # -------------------------
@@ -105,21 +91,15 @@ def read_all_products(db: Session = Depends(auth.get_db)):
     products = crud.get_all_products_with_reviews(db)
     return products
 
-
-
-
 # -------------------------
 # GET ALL REVIEWS FOR A PRODUCT
 # -------------------------
-@app.get("/products/{product_id}/reviews", response_model=list[schemas.ReviewResponse])
+@app.get("/products/{product_id}/reviews", response_model=list[schemas.ReviewDetail])
 def get_product_reviews(product_id: str, db: Session = Depends(auth.get_db)):
     reviews = crud.get_reviews_by_product(db, product_id)
     if not reviews:
         raise HTTPException(status_code=404, detail="No reviews found for this product.")
     return reviews
-
-
-
 
 # -------------------------
 # GET USER CART ENDPOINT
@@ -136,17 +116,13 @@ def get_user_cart(user_id: int, db: Session = Depends(auth.get_db)):
     - total number of products
     """
     cart_data = crud.get_user_cart(db, user_id)
-
     if not cart_data.items:
         raise HTTPException(status_code=404, detail="No items found in cart")
-
     return cart_data
-
 
 # -------------------------
 # GET ALL ORDERS
 # -------------------------
-
 @app.get("/orders", response_model=List[schemas.OrderResponse])
 def read_all_orders(db: Session = Depends(auth.get_db)):
     orders = crud.get_all_orders(db)
@@ -154,11 +130,9 @@ def read_all_orders(db: Session = Depends(auth.get_db)):
         raise HTTPException(status_code=404, detail="No orders found")
     return orders
 
-
-# # -------------------------
-# # GET ALL ORDERS OF A USER
-# # -------------------------
-
+# -------------------------
+# GET ALL ORDERS OF A USER
+# -------------------------
 @app.get("/users/{user_id}/orders", response_model=List[schemas.OrderResponse])
 def read_user_orders(user_id: int, db: Session = Depends(auth.get_db)):
     orders = crud.get_user_orders(db, user_id)
@@ -166,9 +140,60 @@ def read_user_orders(user_id: int, db: Session = Depends(auth.get_db)):
         raise HTTPException(status_code=404, detail="No orders found for this user")
     return orders
 
+# -------------------------
+# UPDATE ORDER STATUS
+# -------------------------
+@app.put("/orders/{order_id}/status", response_model=schemas.OrderResponse)
+def update_order_status(order_id: int, update: schemas.OrderUpdate, db: Session = Depends(auth.get_db)):
+    order = crud.update_order_status(db, order_id, update.status)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return crud.get_order(db, order_id)
+
+# -------------------------
+# CREATE REVIEW
+# -------------------------
+@app.post("/reviews/", response_model=schemas.ReviewDetail)
+def create_product_review(review: schemas.ReviewCreate, db: Session = Depends(auth.get_db)):
+    db_review = crud.create_review(db, review)
+    if not db_review:
+        raise HTTPException(status_code=400, detail="Could not create review")
+    return crud.get_review_detail(db, db_review.id)
+
+# -------------------------
+# UPDATE CART QUANTITY
+# -------------------------
+@app.put("/cart/{user_id}/{product_id}", response_model=schemas.CartResponse)
+def update_cart_quantity(user_id: int, product_id: str, cart_update: schemas.CartUpdate, db: Session = Depends(auth.get_db)):
+    updated = crud.update_cart_quantity(db, user_id, product_id, cart_update.size, cart_update.quantity)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Cart item not found")
+    return crud.get_user_cart(db, user_id)
+
+# -------------------------
+# REMOVE FROM CART
+# -------------------------
+@app.delete("/cart/{user_id}/{product_id}", response_model=schemas.CartResponse)
+def remove_from_cart(user_id: int, product_id: str, size: str = Query(...), db: Session = Depends(auth.get_db)):
+    removed = crud.remove_from_cart(db, user_id, product_id, size)
+    if not removed:
+        raise HTTPException(status_code=404, detail="Cart item not found")
+    return crud.get_user_cart(db, user_id)
 
 
-
+# -------------------------
+# ADD TO CART
+# -------------------------
+@app.post("/cart/", response_model=schemas.CartResponse)
+def add_to_cart(cart_item: schemas.CartCreate, db: Session = Depends(auth.get_db)):
+    """
+    Add a product to the user's cart with user_id, product_id, size, and quantity (default=1).
+    Returns the updated cart.
+    """
+    added = crud.add_to_cart(db, cart_item)
+    if not added:
+        raise HTTPException(status_code=400, detail="Could not add item to cart")
+    return crud.get_user_cart(db, cart_item.user_id)
 
 
 @app.get("/")

@@ -2,8 +2,6 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from datetime import date
 
-
-
 # -------------------------
 # USER SCHEMAS
 # -------------------------
@@ -12,10 +10,8 @@ class UserBase(BaseModel):
     username: str
     email: EmailStr
 
-
 class UserCreate(UserBase):
     password: str
-
 
 class UserResponse(UserBase):
     id: int
@@ -24,21 +20,17 @@ class UserResponse(UserBase):
     class Config:
         from_attributes = True
 
-
 class Token(BaseModel):
     access_token: str
     token_type: str
 
-
 class TokenData(BaseModel):
     username: Optional[str] = None
-
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     disabled: Optional[bool] = None
-
 
 # -------------------------
 # PRODUCT & REVIEW SCHEMAS
@@ -49,13 +41,11 @@ class ReviewBase(BaseModel):
     user_id: int
     product_id: str
 
-
 class ReviewResponse(ReviewBase):
     id: int
 
     class Config:
         from_attributes = True
-
 
 class ProductBase(BaseModel):
     id: str
@@ -63,7 +53,6 @@ class ProductBase(BaseModel):
     image: str
     images: Optional[List[str]] = None
     collection: str
-
 
 class ProductResponse(ProductBase):
     total_reviews: int
@@ -78,14 +67,11 @@ class ProductResponse(ProductBase):
 
     class Config:
         from_attributes = True
-        
-        
 
 # -------------------------
 # REVIEW SCHEMAS
 # -------------------------
-
-class ReviewResponse(BaseModel):
+class ReviewDetail(BaseModel):
     username: str
     stars: float
     text: Optional[str] = None
@@ -93,9 +79,6 @@ class ReviewResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        
-        
-        
 
 # -------------------------
 # CART RESPONSE SCHEMA
@@ -110,13 +93,9 @@ class CartProduct(BaseModel):
     class Config:
         from_attributes = True
 
-
 class CartResponse(BaseModel):
     total_products: int
     items: List[CartProduct]
-    
-    
-    
 
 # -------------------------
 # ORDER RESPONSE SCHEMA
@@ -137,3 +116,26 @@ class OrderResponse(BaseModel):
     class Config:
         from_attributes = True
 
+# -------------------------
+# NEW SCHEMAS
+# -------------------------
+class ReviewCreate(BaseModel):
+    user_id: int
+    product_id: str
+    stars: float
+    text: Optional[str] = None
+    time: str
+
+class OrderUpdate(BaseModel):
+    status: str
+
+class CartUpdate(BaseModel):
+    size: str
+    quantity: int
+    
+    
+class CartCreate(BaseModel):
+    user_id: int
+    product_id: str
+    size: str
+    quantity: int = 1

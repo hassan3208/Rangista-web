@@ -148,6 +148,8 @@ def seed_data():
     # -------------------
     carts = [
         models.Cart(user_id=1, product_id="eid-1", size="M", quantity=1),
+        models.Cart(user_id=1, product_id="eid-2", size="S", quantity=2),  # Additional product for hassan
+        models.Cart(user_id=1, product_id="ind-1", size="L", quantity=1),  # Additional product for hassan
         models.Cart(user_id=2, product_id="eid-2", size="L", quantity=3),
         models.Cart(user_id=3, product_id="ind-1", size="S", quantity=1),
     ]
@@ -173,7 +175,7 @@ def seed_data():
     db.commit()
 
     # -------------------
-    # ORDER ITEMS (multiple products per order)
+    # ORDER ITEMS
     # -------------------
     order_items = [
         models.OrderItem(

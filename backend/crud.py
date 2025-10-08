@@ -3,9 +3,9 @@ from sqlalchemy import func
 import models, schemas
 from models import User, Order, Product
 from passlib.context import CryptContext
+from datetime import date
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
-
 
 # -------------------------
 # USER FUNCTIONS
@@ -13,14 +13,11 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
-
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
-
 def get_all_users(db: Session):
     return db.query(models.User).all()
-
 
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_password = pwd_context.hash(user.password)
@@ -36,10 +33,8 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
-
 
 def update_user(db: Session, db_user: models.User, updates: schemas.UserUpdate):
     if updates.email is not None:
@@ -48,11 +43,9 @@ def update_user(db: Session, db_user: models.User, updates: schemas.UserUpdate):
         db_user.full_name = updates.full_name
     if updates.disabled is not None:
         db_user.disabled = updates.disabled
-
     db.commit()
     db.refresh(db_user)
     return db_user
-
 
 # -------------------------
 # PRODUCT FUNCTIONS
@@ -110,11 +103,9 @@ def get_all_products_with_reviews(db: Session):
         )
     return products
 
-
 # -------------------------
 # REVIEW FUNCTIONS
 # -------------------------
-
 def get_reviews_by_product(db: Session, product_id: str):
     """
     Fetch all reviews for a specific product, including username, stars, text, and time.
@@ -133,7 +124,7 @@ def get_reviews_by_product(db: Session, product_id: str):
     )
 
     return [
-        schemas.ReviewResponse(
+        schemas.ReviewDetail(
             username=r.username,
             stars=r.stars,
             text=r.text,
@@ -141,7 +132,6 @@ def get_reviews_by_product(db: Session, product_id: str):
         )
         for r in results
     ]
-
 
 # -------------------------
 # GET ALL PRODUCTS IN USER CART
@@ -164,7 +154,6 @@ def get_user_cart(db: Session, user_id: int):
         .all()
     )
 
-    # Convert results into response schema list
     items = [
         schemas.CartProduct(
             product_name=r.product_name,
@@ -176,18 +165,12 @@ def get_user_cart(db: Session, user_id: int):
         for r in results
     ]
 
-    # Count distinct products instead of summing quantities
     total_products = len(items)
-
     return schemas.CartResponse(total_products=total_products, items=items)
-
-
-
 
 # -------------------------
 # GET ALL ORDERS OF ALL USER
 # -------------------------
-
 def get_all_orders(db: Session):
     """
     Fetch all orders from all users with product details.
@@ -204,18 +187,15 @@ def get_all_orders(db: Session):
 
     for order in orders:
         username = order.user.username
-
         products_list = [
             schemas.OrderProduct(
                 product_name=item.product.name,
                 quantity=item.quantity,
                 size=item.size
             )
-            for item in order.items  # order.items comes from OrderItem relationship
+            for item in order.items
         ]
-
         total_products = sum(item.quantity for item in order.items)
-
         order_responses.append(
             schemas.OrderResponse(
                 order_id=order.id,
@@ -226,25 +206,17 @@ def get_all_orders(db: Session):
                 order_time=order.time
             )
         )
-
     return order_responses
-
-
-
 
 # -------------------------
 # GET ALL ORDERS OF A SPECIFIC USER
 # -------------------------
-
 def get_user_orders(db: Session, user_id: int):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         return []
-
     orders_list = []
-
     orders = db.query(Order).filter(Order.user_id == user_id).all()
-
     for order in orders:
         products = []
         total_products = 0
@@ -257,7 +229,6 @@ def get_user_orders(db: Session, user_id: int):
                     size=item.size
                 ))
                 total_products += item.quantity
-
         orders_list.append(schemas.OrderResponse(
             order_id=order.id,
             username=user.username,
@@ -266,7 +237,142 @@ def get_user_orders(db: Session, user_id: int):
             products=products,
             order_time=order.time
         ))
-
     return orders_list
 
+# -------------------------
+# NEW CRUD FUNCTIONS
+# -------------------------
+def update_order_status(db: Session, order_id: int, status: str):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        return None
+    order.status = status
+    db.commit()
+    db.refresh(order)
+    return order
 
+def get_order(db: Session, order_id: int):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        return None
+    username = order.user.username
+    products_list = [
+        schemas.OrderProduct(
+            product_name=item.product.name,
+            quantity=item.quantity,
+            size=item.size
+        )
+        for item in order.items
+    ]
+    total_products = sum(item.quantity for item in order.items)
+    return schemas.OrderResponse(
+        order_id=order.id,
+        username=username,
+        status=order.status,
+        total_products=total_products,
+        products=products_list,
+        order_time=order.time
+    )
+
+def create_review(db: Session, review: schemas.ReviewCreate):
+    try:
+        review_time = date.fromisoformat(review.time)
+    except ValueError:
+        raise ValueError("Invalid date format. Use YYYY-MM-DD.")
+    db_review = models.Review(
+        stars=review.stars,
+        text=review.text,
+        time=review_time,
+        user_id=review.user_id,
+        product_id=review.product_id
+    )
+    db.add(db_review)
+    db.commit()
+    db.refresh(db_review)
+    return db_review
+
+def get_review_detail(db: Session, review_id: int):
+    result = (
+        db.query(
+            models.User.username,
+            models.Review.stars,
+            models.Review.text,
+            models.Review.time,
+        )
+        .join(models.Review, models.User.id == models.Review.user_id)
+        .filter(models.Review.id == review_id)
+        .first()
+    )
+    if not result:
+        return None
+    return schemas.ReviewDetail(
+        username=result.username,
+        stars=result.stars,
+        text=result.text,
+        time=result.time,
+    )
+
+def update_cart_quantity(db: Session, user_id: int, product_id: str, size: str, quantity: int):
+    cart_item = db.query(models.Cart).filter(
+        models.Cart.user_id == user_id,
+        models.Cart.product_id == product_id,
+        models.Cart.size == size
+    ).first()
+    if not cart_item:
+        return None
+    cart_item.quantity = quantity
+    db.commit()
+    db.refresh(cart_item)
+    return cart_item
+
+def remove_from_cart(db: Session, user_id: int, product_id: str, size: str):
+    cart_item = db.query(models.Cart).filter(
+        models.Cart.user_id == user_id,
+        models.Cart.product_id == product_id,
+        models.Cart.size == size
+    ).first()
+    if not cart_item:
+        return None
+    db.delete(cart_item)
+    db.commit()
+    return True
+
+
+
+def add_to_cart(db: Session, cart_item: schemas.CartCreate):
+    """
+    Add a new item to the cart or update quantity if it already exists.
+    """
+    # Validate user and product existence
+    user = db.query(models.User).filter(models.User.id == cart_item.user_id).first()
+    if not user:
+        return None
+    product = db.query(models.Product).filter(models.Product.id == cart_item.product_id).first()
+    if not product:
+        return None
+
+    # Check if the item already exists in the cart
+    existing_cart_item = db.query(models.Cart).filter(
+        models.Cart.user_id == cart_item.user_id,
+        models.Cart.product_id == cart_item.product_id,
+        models.Cart.size == cart_item.size
+    ).first()
+
+    if existing_cart_item:
+        # Update quantity if item exists
+        existing_cart_item.quantity += cart_item.quantity
+        db.commit()
+        db.refresh(existing_cart_item)
+        return existing_cart_item
+
+    # Create new cart item
+    db_cart_item = models.Cart(
+        user_id=cart_item.user_id,
+        product_id=cart_item.product_id,
+        size=cart_item.size,
+        quantity=cart_item.quantity
+    )
+    db.add(db_cart_item)
+    db.commit()
+    db.refresh(db_cart_item)
+    return db_cart_item
