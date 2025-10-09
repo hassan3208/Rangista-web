@@ -77,6 +77,21 @@ export default function ProductCard({
   }, [id, size]);
 
   useEffect(() => {
+    const onChange = () => {
+      if (size) {
+        const newStock = getStock(id, size);
+        setStock(newStock);
+        console.log("Products change event:", { id, size, stock: newStock });
+      } else {
+        setStock(0);
+        console.log("Products change event, no size:", { id, size });
+      }
+    };
+    window.addEventListener("products:change", onChange);
+    return () => window.removeEventListener("products:change", onChange);
+  }, [id, size]);
+
+  useEffect(() => {
     const update = async () => {
       const list = await listReviewsByProduct(id);
       const count = list.length;
