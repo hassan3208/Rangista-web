@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Form, Query
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 from datetime import timedelta
 from fastapi.middleware.cors import CORSMiddleware
 import models, schemas, crud, auth, database
@@ -194,6 +194,41 @@ def add_to_cart(cart_item: schemas.CartCreate, db: Session = Depends(auth.get_db
     if not added:
         raise HTTPException(status_code=400, detail="Could not add item to cart")
     return crud.get_user_cart(db, cart_item.user_id)
+
+
+
+# -------------------------
+# CREATE ORDER FROM CART
+# -------------------------
+@app.post("/orders/from-cart/", response_model=List[schemas.OrderResponse])
+def create_order_from_cart(order: schemas.OrderCreate, db: Session = Depends(auth.get_db)):
+    """
+    Create a new order for a user using all items in their cart.
+    Clears the cart after order creation and returns the user's updated list of orders.
+    """
+    orders = crud.create_order_from_cart(db, order)
+    if not orders:
+        raise HTTPException(status_code=400, detail="Could not create order")
+    return orders
+
+
+
+
+
+@app.get("/reviews/check")
+def check_review(
+    user_id: int = Query(...),
+    order_id: int = Query(...),
+    product_id: str = Query(...),
+    size: Optional[str] = Query(None),
+    db: Session = Depends(auth.get_db)
+):
+    """
+    Check if a user has reviewed a specific product (ignores order_id and size as reviews are per product).
+    Returns {'reviewed': True/False}.
+    """
+    reviewed = crud.has_user_reviewed_product(db, user_id, product_id)
+    return {"reviewed": reviewed}
 
 
 @app.get("/")

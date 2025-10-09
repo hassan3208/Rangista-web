@@ -89,6 +89,9 @@ class CartProduct(BaseModel):
     size: str
     quantity: int
     image: str
+    user_id: int
+    product_id: str
+    price: int
 
     class Config:
         from_attributes = True
@@ -133,9 +136,15 @@ class CartUpdate(BaseModel):
     size: str
     quantity: int
     
-    
 class CartCreate(BaseModel):
     user_id: int
     product_id: str
     size: str
     quantity: int = 1
+
+# -------------------------
+# ORDER CREATE SCHEMA
+# -------------------------
+class OrderCreate(BaseModel):
+    user_id: int
+    order_time: str

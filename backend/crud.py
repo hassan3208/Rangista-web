@@ -4,6 +4,7 @@ import models, schemas
 from models import User, Order, Product
 from passlib.context import CryptContext
 from datetime import date
+from fastapi import HTTPException
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -139,7 +140,7 @@ def get_reviews_by_product(db: Session, product_id: str):
 def get_user_cart(db: Session, user_id: int):
     """
     Returns all products in a user's cart with product name, collection,
-    size, quantity, image, and total number of distinct products.
+    size, quantity, image, user_id, product_id, product price, and total number of distinct products.
     """
     results = (
         db.query(
@@ -147,9 +148,15 @@ def get_user_cart(db: Session, user_id: int):
             models.Product.collection.label("collection"),
             models.Cart.size.label("size"),
             models.Cart.quantity.label("quantity"),
-            models.Product.image.label("image")
+            models.Product.image.label("image"),
+            models.Cart.user_id.label("user_id"),
+            models.Cart.product_id.label("product_id"),
+            models.PriceAndStock.S_price,
+            models.PriceAndStock.M_price,
+            models.PriceAndStock.L_price,
         )
         .join(models.Cart, models.Product.id == models.Cart.product_id)
+        .join(models.PriceAndStock, models.Product.id == models.PriceAndStock.product_id)
         .filter(models.Cart.user_id == user_id)
         .all()
     )
@@ -161,12 +168,20 @@ def get_user_cart(db: Session, user_id: int):
             size=r.size,
             quantity=r.quantity,
             image=r.image,
+            user_id=r.user_id,
+            product_id=r.product_id,
+            price=(r.S_price if r.size == "S" else r.M_price if r.size == "M" else r.L_price) * r.quantity,
         )
         for r in results
     ]
 
     total_products = len(items)
     return schemas.CartResponse(total_products=total_products, items=items)
+
+
+
+
+
 
 # -------------------------
 # GET ALL ORDERS OF ALL USER
@@ -320,11 +335,47 @@ def update_cart_quantity(db: Session, user_id: int, product_id: str, size: str, 
     ).first()
     if not cart_item:
         return None
+
+    # Get the price and stock record
+    price_stock = db.query(models.PriceAndStock).filter(
+        models.PriceAndStock.product_id == product_id
+    ).first()
+    if not price_stock:
+        return None
+
+    # Calculate the quantity delta (new quantity - old quantity)
+    quantity_delta = quantity - cart_item.quantity
+
+    # Update stock based on size and quantity delta
+    if quantity_delta > 0:
+        # Adding quantity, check if enough stock is available
+        if size == "S" and price_stock.S_stock >= quantity_delta:
+            price_stock.S_stock -= quantity_delta
+        elif size == "M" and price_stock.M_stock >= quantity_delta:
+            price_stock.M_stock -= quantity_delta
+        elif size == "L" and price_stock.L_stock >= quantity_delta:
+            price_stock.L_stock -= quantity_delta
+        else:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for additional quantity in size {size}")
+    elif quantity_delta < 0:
+        # Reducing quantity, add back to stock
+        if size == "S":
+            price_stock.S_stock += abs(quantity_delta)
+        elif size == "M":
+            price_stock.M_stock += abs(quantity_delta)
+        elif size == "L":
+            price_stock.L_stock += abs(quantity_delta)
+
+    # Update cart item quantity
     cart_item.quantity = quantity
     db.commit()
     db.refresh(cart_item)
+    db.refresh(price_stock)
     return cart_item
 
+# ------------------------- 
+# REMOVE FROM CART 
+# ------------------------- 
 def remove_from_cart(db: Session, user_id: int, product_id: str, size: str):
     cart_item = db.query(models.Cart).filter(
         models.Cart.user_id == user_id,
@@ -333,15 +384,36 @@ def remove_from_cart(db: Session, user_id: int, product_id: str, size: str):
     ).first()
     if not cart_item:
         return None
+
+    # Get the price and stock record to update stock
+    price_stock = db.query(models.PriceAndStock).filter(
+        models.PriceAndStock.product_id == product_id
+    ).first()
+    if not price_stock:
+        # Even if not found, still remove from cart
+        db.delete(cart_item)
+        db.commit()
+        return True
+
+    # Add back the quantity to the appropriate size stock
+    if size == "S":
+        price_stock.S_stock += cart_item.quantity
+    elif size == "M":
+        price_stock.M_stock += cart_item.quantity
+    elif size == "L":
+        price_stock.L_stock += cart_item.quantity
+
+    # Delete the cart item
     db.delete(cart_item)
     db.commit()
+    db.refresh(price_stock)
     return True
 
 
 
 def add_to_cart(db: Session, cart_item: schemas.CartCreate):
     """
-    Add a new item to the cart or update quantity if it already exists.
+    Add a new item to the cart or update quantity if it already exists, and reduce stock only for net increases.
     """
     # Validate user and product existence
     user = db.query(models.User).filter(models.User.id == cart_item.user_id).first()
@@ -349,6 +421,11 @@ def add_to_cart(db: Session, cart_item: schemas.CartCreate):
         return None
     product = db.query(models.Product).filter(models.Product.id == cart_item.product_id).first()
     if not product:
+        return None
+
+    # Get stock
+    price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == cart_item.product_id).first()
+    if not price_stock:
         return None
 
     # Check if the item already exists in the cart
@@ -359,11 +436,43 @@ def add_to_cart(db: Session, cart_item: schemas.CartCreate):
     ).first()
 
     if existing_cart_item:
-        # Update quantity if item exists
-        existing_cart_item.quantity += cart_item.quantity
+        # Calculate delta for stock deduction (only deduct if quantity is increasing)
+        quantity_delta = cart_item.quantity - existing_cart_item.quantity
+        if quantity_delta > 0:
+            # Verify stock for the additional quantity
+            if cart_item.size == "S" and price_stock.S_stock >= quantity_delta:
+                price_stock.S_stock -= quantity_delta
+            elif cart_item.size == "M" and price_stock.M_stock >= quantity_delta:
+                price_stock.M_stock -= quantity_delta
+            elif cart_item.size == "L" and price_stock.L_stock >= quantity_delta:
+                price_stock.L_stock -= quantity_delta
+            else:
+                raise HTTPException(status_code=400, detail=f"Insufficient stock for additional quantity in size {cart_item.size}")
+        elif quantity_delta < 0:
+            # If decreasing quantity, add back to stock (optional, but consistent)
+            if cart_item.size == "S":
+                price_stock.S_stock += abs(quantity_delta)
+            elif cart_item.size == "M":
+                price_stock.M_stock += abs(quantity_delta)
+            elif cart_item.size == "L":
+                price_stock.L_stock += abs(quantity_delta)
+
+        # Update quantity (set to provided value)
+        existing_cart_item.quantity = cart_item.quantity
         db.commit()
         db.refresh(existing_cart_item)
+        db.refresh(price_stock)
         return existing_cart_item
+
+    # For new item: Verify and deduct full stock
+    if cart_item.size == "S" and price_stock.S_stock >= cart_item.quantity:
+        price_stock.S_stock -= cart_item.quantity
+    elif cart_item.size == "M" and price_stock.M_stock >= cart_item.quantity:
+        price_stock.M_stock -= cart_item.quantity
+    elif cart_item.size == "L" and price_stock.L_stock >= cart_item.quantity:
+        price_stock.L_stock -= cart_item.quantity
+    else:
+        raise HTTPException(status_code=400, detail=f"Insufficient stock for size {cart_item.size}")
 
     # Create new cart item
     db_cart_item = models.Cart(
@@ -375,4 +484,94 @@ def add_to_cart(db: Session, cart_item: schemas.CartCreate):
     db.add(db_cart_item)
     db.commit()
     db.refresh(db_cart_item)
+    db.refresh(price_stock)
     return db_cart_item
+
+
+
+# -------------------------
+# CREATE ORDER FROM CART
+# -------------------------
+def create_order_from_cart(db: Session, order: schemas.OrderCreate):
+    """
+    Create a new order for a user using all items in their cart, update stock, and clear the cart.
+    Returns the updated list of user orders.
+    """
+    # Validate user existence
+    user = db.query(models.User).filter(models.User.id == order.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Fetch cart items
+    cart_items = db.query(models.Cart).filter(models.Cart.user_id == order.user_id).all()
+    if not cart_items:
+        raise HTTPException(status_code=400, detail="Cart is empty")
+
+    # Validate products and stock
+    for item in cart_items:
+        product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
+        if not product:
+            raise HTTPException(status_code=404, detail=f"Product {item.product_id} not found")
+        price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+        if not price_stock:
+            raise HTTPException(status_code=400, detail=f"No stock data for product {item.product_id}")
+        if item.size == "S" and price_stock.S_stock < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size S")
+        if item.size == "M" and price_stock.M_stock < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size M")
+        if item.size == "L" and price_stock.L_stock < item.quantity:
+            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size L")
+
+    # Create new order
+    db_order = models.Order(
+        user_id=order.user_id,
+        status="pending",
+        time=date.fromisoformat(order.order_time)
+    )
+    db.add(db_order)
+    db.commit()
+    db.refresh(db_order)
+
+    # Add order items from cart and update stock
+    for item in cart_items:
+        db_item = models.OrderItem(
+            order_id=db_order.id,
+            product_id=item.product_id,
+            size=item.size,
+            quantity=item.quantity
+        )
+        db.add(db_item)
+        # Update stock
+        price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+        if item.size == "S":
+            price_stock.S_stock -= item.quantity
+        elif item.size == "M":
+            price_stock.M_stock -= item.quantity
+        elif item.size == "L":
+            price_stock.L_stock -= item.quantity
+        db.commit()
+        db.refresh(price_stock)
+
+    # Clear user's cart
+    db.query(models.Cart).filter(models.Cart.user_id == order.user_id).delete()
+    db.commit()
+
+    # Return all user orders
+    return get_user_orders(db, order.user_id)
+
+
+
+
+
+from typing import Optional
+
+def has_user_reviewed_product(db: Session, user_id: int, product_id: str):
+    """
+    Check if a user has already submitted a review for a product.
+    Returns True if a review exists, False otherwise.
+    """
+    review = db.query(models.Review).filter(
+        models.Review.user_id == user_id,
+        models.Review.product_id == product_id
+    ).first()
+    return review is not None

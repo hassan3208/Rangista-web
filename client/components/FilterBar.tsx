@@ -1,12 +1,12 @@
-import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { COLLECTIONS, SIZES } from "@/data/products";
-import { formatPKR } from "@/lib/currency";
 
 export interface Filters {
   collection?: (typeof COLLECTIONS)[number] | "all";
   size?: (typeof SIZES)[number] | "all";
-  maxPrice?: number;
+  kids?: boolean;
 }
 
 export default function FilterBar({ filters, onChange }: { filters: Filters; onChange: (f: Filters) => void }) {
@@ -40,13 +40,16 @@ export default function FilterBar({ filters, onChange }: { filters: Filters; onC
           </SelectContent>
         </Select>
       </div>
-      <div>
-        <div className="flex items-center justify-between">
-          <label className="text-xs text-muted-foreground">Max Price</label>
-          <span className="text-xs font-medium">{formatPKR(filters.maxPrice ?? 10000)}</span>
-        </div>
-        <div className="mt-3">
-          <Slider value={[filters.maxPrice ?? 10000]} max={20000} step={500} onValueChange={(v) => onChange({ ...filters, maxPrice: v[0] })} />
+      <div className="flex items-end">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="kids-filter"
+            checked={filters.kids ?? false}
+            onCheckedChange={(checked) => onChange({ ...filters, kids: !!checked })}
+          />
+          <Label htmlFor="kids-filter" className="text-sm font-medium">
+            Kids Only
+          </Label>
         </div>
       </div>
     </div>

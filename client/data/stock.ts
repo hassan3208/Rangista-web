@@ -3,7 +3,7 @@ import { PRODUCTS } from "./products";
 const LS_STOCK = "rangista_stock";
 
 export type SizeKey = "S" | "M" | "L" | "Kids";
-export type SizeStock = { S: number; M: number; L: number; kids: boolean };
+export type SizeStock = { S: number; M: number; L: number };
 
 type StockMap = Record<string, SizeStock>;
 
@@ -24,45 +24,17 @@ function writeStock(map: StockMap) {
   } catch {}
 }
 
-function seedFromString(str: string): number {
-  let h = 2166136261;
-  for (let i = 0; i < str.length; i++) {
-    h ^= str.charCodeAt(i);
-    h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
-  }
-  return h >>> 0;
-}
-
-function seededRand(min: number, max: number, seed: number): number {
-  let x = seed || 123456789;
-  x = (1664525 * x + 1013904223) % 0xffffffff;
-  const r = x / 0xffffffff;
-  return Math.floor(min + r * (max - min + 1));
-}
-
 function ensureInitialized(): StockMap {
   const map = readStock();
   let changed = false;
   for (const p of PRODUCTS) {
-    const cur: any = (map as any)[p.id];
-    if (cur == null) {
-      const seed = seedFromString(p.id);
-      const hasKids = p.sizes.includes("Kids");
-      (map as any)[p.id] = {
-        S: p.sizes.includes("S") ? Math.max(0, seededRand(3, 20, seed + 1)) : 0,
-        M: p.sizes.includes("M") ? Math.max(0, seededRand(3, 20, seed + 2)) : 0,
-        L: p.sizes.includes("L") ? Math.max(0, seededRand(3, 20, seed + 3)) : 0,
-        kids: hasKids,
-      } as SizeStock;
-      changed = true;
-    } else if (typeof cur === "number") {
-      const hasKids = p.sizes.includes("Kids");
-      (map as any)[p.id] = {
-        S: p.sizes.includes("S") ? Math.max(0, Math.floor(cur)) : 0,
-        M: 0,
-        L: 0,
-        kids: hasKids,
-      } as SizeStock;
+    const cur: SizeStock | undefined = map[p.id];
+    if (cur == null || cur.S !== p.S_stock || cur.M !== p.M_stock || cur.L !== p.L_stock) {
+      map[p.id] = {
+        S: p.S_stock,
+        M: p.M_stock,
+        L: p.L_stock,
+      };
       changed = true;
     }
   }
@@ -77,51 +49,75 @@ export function getAllStocks(): StockMap {
 export function getStock(id: string, size?: SizeKey): number {
   const map = ensureInitialized();
   const entry = map[id];
-  if (!entry) return 0;
-  if (size === "S") return entry.S ?? 0;
-  if (size === "M") return entry.M ?? 0;
-  if (size === "L") return entry.L ?? 0;
-  if (size === "Kids") return entry.kids ? 9999 : 0; // treat kids as boolean availability
-  // aggregated stock (exclude kids boolean)
-  return (entry.S ?? 0) + (entry.M ?? 0) + (entry.L ?? 0);
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (!product) return 0;
+  if (!entry) {
+    if (size === "S") return product.S_stock;
+    if (size === "M") return product.M_stock;
+    if (size === "L") return product.L_stock;
+    if (size === "Kids") return product.kids ? 9999 : 0;
+    return product.S_stock + product.M_stock + product.L_stock;
+  }
+  if (size === "S") return entry.S;
+  if (size === "M") return entry.M;
+  if (size === "L") return entry.L;
+  if (size === "Kids") return product.kids ? 9999 : 0;
+  return entry.S + entry.M + entry.L;
 }
 
 export function setStock(id: string, size: Exclude<SizeKey, "Kids">, qty: number) {
   const map = ensureInitialized();
-  const entry = map[id] ?? { S: 0, M: 0, L: 0, kids: false };
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (!product) return;
+  if ((size === "S" && product.S_stock === 0) || (size === "M" && product.M_stock === 0) || (size === "L" && product.L_stock === 0)) {
+    return;
+  }
+  const entry = map[id] ?? { S: product.S_stock, M: product.M_stock, L: product.L_stock };
   entry[size] = Math.max(0, Math.floor(qty));
   map[id] = entry;
   writeStock(map);
 }
 
 export function setKidsAvailable(id: string, available: boolean) {
-  const map = ensureInitialized();
-  const entry = map[id] ?? { S: 0, M: 0, L: 0, kids: false };
-  entry.kids = !!available;
-  map[id] = entry;
-  writeStock(map);
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (product) {
+    product.kids = available;
+    try {
+      window.dispatchEvent(new CustomEvent("products:change"));
+    } catch {}
+  }
 }
 
 export function adjustStock(id: string, delta: number, size?: SizeKey) {
   const map = ensureInitialized();
-  const entry = map[id] ?? { S: 0, M: 0, L: 0, kids: false };
+  const product = PRODUCTS.find((p) => p.id === id);
+  if (!product) return;
+  const entry = map[id] ?? { S: product.S_stock, M: product.M_stock, L: product.L_stock };
   if (size === "Kids") {
-    // kids availability doesn't change with qty
-    writeStock(map);
+    setKidsAvailable(id, delta > 0);
     return;
   }
   if (size === "S" || size === "M" || size === "L") {
+    if ((size === "S" && product.S_stock === 0) || (size === "M" && product.M_stock === 0) || (size === "L" && product.L_stock === 0)) {
+      return;
+    }
     entry[size] = Math.max(0, (entry[size] ?? 0) + delta);
     map[id] = entry;
     writeStock(map);
     return;
   }
-  // size not specified: distribute across S->M->L for negative; add to S for positive
   if (delta >= 0) {
-    entry.S = Math.max(0, (entry.S ?? 0) + delta);
+    if (product.S_stock > 0) {
+      entry.S = Math.max(0, (entry.S ?? 0) + delta);
+    } else if (product.M_stock > 0) {
+      entry.M = Math.max(0, (entry.M ?? 0) + delta);
+    } else if (product.L_stock > 0) {
+      entry.L = Math.max(0, (entry.L ?? 0) + delta);
+    }
   } else {
     let remaining = -delta;
     const consume = (k: Exclude<SizeKey, "Kids">) => {
+      if ((k === "S" && product.S_stock === 0) || (k === "M" && product.M_stock === 0) || (k === "L" && product.L_stock === 0)) return;
       const take = Math.min(remaining, entry[k] ?? 0);
       entry[k] = Math.max(0, (entry[k] ?? 0) - take);
       remaining -= take;
@@ -137,13 +133,10 @@ export function adjustStock(id: string, delta: number, size?: SizeKey) {
 export function resetStocksRandom() {
   const map: StockMap = {};
   for (const p of PRODUCTS) {
-    const seed = seedFromString(p.id + Date.now().toString());
-    const hasKids = p.sizes.includes("Kids");
     map[p.id] = {
-      S: p.sizes.includes("S") ? Math.max(0, seededRand(3, 20, seed + 1)) : 0,
-      M: p.sizes.includes("M") ? Math.max(0, seededRand(3, 20, seed + 2)) : 0,
-      L: p.sizes.includes("L") ? Math.max(0, seededRand(3, 20, seed + 3)) : 0,
-      kids: hasKids,
+      S: p.S_stock,
+      M: p.M_stock,
+      L: p.L_stock,
     };
   }
   writeStock(map);

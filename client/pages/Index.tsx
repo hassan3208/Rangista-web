@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-
 import ProductCard from "@/components/ProductCard";
 import FilterBar, { Filters } from "@/components/FilterBar";
 import Testimonials from "@/components/Testimonials";
-import { getMinimumPrice, getProducts } from "@/data/catalog";
+import { getProducts } from "@/data/catalog";
 import { useSearchParams } from "react-router-dom";
 
 const heroImages = [
@@ -14,21 +13,19 @@ const heroImages = [
 ];
 
 export default function Index() {
-  // Hero carousel state
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
-    }, 5000); // 5 seconds
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
-  // Filters
   const [filters, setFilters] = useState<Filters>({
     collection: "all",
     size: "all",
-    maxPrice: 20000,
+    kids: false,
   });
 
   const [params] = useSearchParams();
@@ -39,19 +36,17 @@ export default function Index() {
     return products.filter((p) => {
       if (q && !(`${p.name} ${p.collection}`.toLowerCase().includes(q))) return false;
       if (filters.collection && filters.collection !== "all" && p.collection !== filters.collection) return false;
-      if (filters.size && filters.size !== "all" && !p.sizes.includes(filters.size)) return false;
-      const minPrice = getMinimumPrice(p);
-      if (filters.maxPrice && minPrice > filters.maxPrice) return false;
+      if (filters.size && filters.size !== "all" && !["S", "M", "L"].includes(filters.size)) return false;
+      if (filters.kids && !p.kids) return false;
       return true;
     });
   }, [filters, q, products]);
 
-  const eid = products.filter((p) => p.collection === "Eid Collection").slice(0, 3);
-  const azadi = products.filter((p) => p.collection === "14 August Independence Collection").slice(0, 3);
+  const eid = filtered.filter((p) => p.collection === "Eid Collection").slice(0, 3);
+  const azadi = filtered.filter((p) => p.collection === "14 August Independence Collection").slice(0, 3);
 
   return (
     <main>
-      {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="container py-16 grid gap-8 md:grid-cols-2 items-center">
           <div>
@@ -71,8 +66,6 @@ export default function Index() {
               </a>
             </div>
           </div>
-
-          {/* Carousel */}
           <div className="relative w-full overflow-hidden rounded-2xl aspect-[4/3]">
             {heroImages.map((src, index) => (
               <img
@@ -88,7 +81,6 @@ export default function Index() {
         </div>
       </section>
 
-      {/* Filter & Products */}
       <section className="container py-10">
         <FilterBar filters={filters} onChange={setFilters} />
         <div id="shop" className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -97,19 +89,22 @@ export default function Index() {
               key={p.id}
               id={p.id}
               name={p.name}
-              price={getMinimumPrice(p)}
               image={p.image}
-              sizes={p.sizes}
-              rating={p.rating}
-              reviews={p.reviews}
-              collection={p.collection as "14 August Independence Collection" | "Eid Collection" | "Bakra Eid Specials" | "Birthday Specials"}
-              priceBySize={p.priceBySize}
+              collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+              total_reviews={p.total_reviews}
+              average_rating={p.average_rating}
+              S_price={p.S_price}
+              M_price={p.M_price}
+              L_price={p.L_price}
+              S_stock={p.S_stock}
+              M_stock={p.M_stock}
+              L_stock={p.L_stock}
+              kids={p.kids}
             />
           ))}
         </div>
       </section>
 
-      {/* Featured Eid Collection */}
       <section className="container py-16">
         <h2 className="font-serif text-3xl">Featured Eid Collection</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -118,19 +113,22 @@ export default function Index() {
               key={p.id}
               id={p.id}
               name={p.name}
-              price={getMinimumPrice(p)}
               image={p.image}
-              sizes={p.sizes}
-              rating={p.rating}
-              reviews={p.reviews}
               collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
-              priceBySize={p.priceBySize}
+              total_reviews={p.total_reviews}
+              average_rating={p.average_rating}
+              S_price={p.S_price}
+              M_price={p.M_price}
+              L_price={p.L_price}
+              S_stock={p.S_stock}
+              M_stock={p.M_stock}
+              L_stock={p.L_stock}
+              kids={p.kids}
             />
           ))}
         </div>
       </section>
 
-      {/* 14 August Specials */}
       <section className="container py-16">
         <h2 className="font-serif text-3xl">14 August Specials</h2>
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -139,19 +137,22 @@ export default function Index() {
               key={p.id}
               id={p.id}
               name={p.name}
-              price={getMinimumPrice(p)}
               image={p.image}
-              sizes={p.sizes}
-              rating={p.rating}
-              reviews={p.reviews}
               collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
-              priceBySize={p.priceBySize}
+              total_reviews={p.total_reviews}
+              average_rating={p.average_rating}
+              S_price={p.S_price}
+              M_price={p.M_price}
+              L_price={p.L_price}
+              S_stock={p.S_stock}
+              M_stock={p.M_stock}
+              L_stock={p.L_stock}
+              kids={p.kids}
             />
           ))}
         </div>
       </section>
 
-      {/* Testimonials */}
       <Testimonials />
     </main>
   );

@@ -1,6 +1,6 @@
 import ProductCard from "@/components/ProductCard";
 import { useFavorites } from "@/context/FavoritesContext";
-import { getMinimumPrice, getProducts } from "@/data/catalog";
+import { getProducts } from "@/data/catalog";
 
 export default function Favorites() {
   const { favorites } = useFavorites();
@@ -19,13 +19,17 @@ export default function Favorites() {
               key={p.id}
               id={p.id}
               name={p.name}
-              price={getMinimumPrice(p)}
               image={p.image}
-              sizes={p.sizes}
-              rating={p.rating}
-              reviews={p.reviews}
               collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
-              priceBySize={p.priceBySize}
+              total_reviews={p.total_reviews}
+              average_rating={p.average_rating}
+              S_price={p.S_price}
+              M_price={p.M_price}
+              L_price={p.L_price}
+              S_stock={p.S_stock}
+              M_stock={p.M_stock}
+              L_stock={p.L_stock}
+              kids={p.kids}
             />
           ))}
         </div>
