@@ -107,6 +107,7 @@ class OrderProduct(BaseModel):
     product_name: str
     quantity: int
     size: str
+    product_id: str
 
 class OrderResponse(BaseModel):
     order_id: int

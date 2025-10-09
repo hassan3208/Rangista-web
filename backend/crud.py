@@ -4,6 +4,7 @@ import models, schemas
 from models import User, Order, Product
 from passlib.context import CryptContext
 from datetime import date
+from typing import Optional
 from fastapi import HTTPException
 
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -183,9 +184,9 @@ def get_user_cart(db: Session, user_id: int):
 
 
 
-# -------------------------
-# GET ALL ORDERS OF ALL USER
-# -------------------------
+# ------------------------- 
+# GET ALL ORDERS OF ALL USER 
+# ------------------------- 
 def get_all_orders(db: Session):
     """
     Fetch all orders from all users with product details.
@@ -194,7 +195,7 @@ def get_all_orders(db: Session):
     - username
     - status
     - total_products
-    - products: list of {product_name, quantity, size}
+    - products: list of {product_name, quantity, size, product_id}
     - order_time
     """
     orders = db.query(models.Order).all()
@@ -206,7 +207,8 @@ def get_all_orders(db: Session):
             schemas.OrderProduct(
                 product_name=item.product.name,
                 quantity=item.quantity,
-                size=item.size
+                size=item.size,
+                product_id=item.product_id  # Add product_id here
             )
             for item in order.items
         ]
@@ -241,7 +243,8 @@ def get_user_orders(db: Session, user_id: int):
                 products.append(schemas.OrderProduct(
                     product_name=product.name,
                     quantity=item.quantity,
-                    size=item.size
+                    size=item.size,
+                    product_id=item.product_id
                 ))
                 total_products += item.quantity
         orders_list.append(schemas.OrderResponse(
@@ -266,6 +269,9 @@ def update_order_status(db: Session, order_id: int, status: str):
     db.refresh(order)
     return order
 
+# ------------------------- 
+# GET ORDER 
+# ------------------------- 
 def get_order(db: Session, order_id: int):
     order = db.query(models.Order).filter(models.Order.id == order_id).first()
     if not order:
@@ -275,7 +281,8 @@ def get_order(db: Session, order_id: int):
         schemas.OrderProduct(
             product_name=item.product.name,
             quantity=item.quantity,
-            size=item.size
+            size=item.size,
+            product_id=item.product_id  # Add product_id here
         )
         for item in order.items
     ]
@@ -288,6 +295,11 @@ def get_order(db: Session, order_id: int):
         products=products_list,
         order_time=order.time
     )
+    
+
+# -------------------------
+# CREATE REVIEW
+# -------------------------
 
 def create_review(db: Session, review: schemas.ReviewCreate):
     try:
@@ -299,12 +311,18 @@ def create_review(db: Session, review: schemas.ReviewCreate):
         text=review.text,
         time=review_time,
         user_id=review.user_id,
-        product_id=review.product_id
+        product_id=review.product_id,
     )
+    print("Creating review:", db_review)
     db.add(db_review)
     db.commit()
     db.refresh(db_review)
     return db_review
+
+
+# -------------------------
+# GET REVIEW DETAIL
+# -------------------------
 
 def get_review_detail(db: Session, review_id: int):
     result = (
@@ -326,6 +344,11 @@ def get_review_detail(db: Session, review_id: int):
         text=result.text,
         time=result.time,
     )
+    
+
+# ------------------------- 
+# UPDATE CART QUANTITY
+# -------------------------
 
 def update_cart_quantity(db: Session, user_id: int, product_id: str, size: str, quantity: int):
     cart_item = db.query(models.Cart).filter(
@@ -411,6 +434,10 @@ def remove_from_cart(db: Session, user_id: int, product_id: str, size: str):
 
 
 
+# -------------------------
+# ADD TO CART
+# -------------------------
+
 def add_to_cart(db: Session, cart_item: schemas.CartCreate):
     """
     Add a new item to the cart or update quantity if it already exists, and reduce stock only for net increases.
@@ -489,12 +516,12 @@ def add_to_cart(db: Session, cart_item: schemas.CartCreate):
 
 
 
-# -------------------------
-# CREATE ORDER FROM CART
-# -------------------------
+# ------------------------- 
+# CREATE ORDER FROM CART 
+# ------------------------- 
 def create_order_from_cart(db: Session, order: schemas.OrderCreate):
     """
-    Create a new order for a user using all items in their cart, update stock, and clear the cart.
+    Create a new order for a user using all items in their cart and clear the cart.
     Returns the updated list of user orders.
     """
     # Validate user existence
@@ -507,7 +534,7 @@ def create_order_from_cart(db: Session, order: schemas.OrderCreate):
     if not cart_items:
         raise HTTPException(status_code=400, detail="Cart is empty")
 
-    # Validate products and stock
+    # Validate products
     for item in cart_items:
         product = db.query(models.Product).filter(models.Product.id == item.product_id).first()
         if not product:
@@ -515,12 +542,6 @@ def create_order_from_cart(db: Session, order: schemas.OrderCreate):
         price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
         if not price_stock:
             raise HTTPException(status_code=400, detail=f"No stock data for product {item.product_id}")
-        if item.size == "S" and price_stock.S_stock < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size S")
-        if item.size == "M" and price_stock.M_stock < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size M")
-        if item.size == "L" and price_stock.L_stock < item.quantity:
-            raise HTTPException(status_code=400, detail=f"Insufficient stock for product {item.product_id} in size L")
 
     # Create new order
     db_order = models.Order(
@@ -532,7 +553,7 @@ def create_order_from_cart(db: Session, order: schemas.OrderCreate):
     db.commit()
     db.refresh(db_order)
 
-    # Add order items from cart and update stock
+    # Add order items from cart
     for item in cart_items:
         db_item = models.OrderItem(
             order_id=db_order.id,
@@ -541,16 +562,7 @@ def create_order_from_cart(db: Session, order: schemas.OrderCreate):
             quantity=item.quantity
         )
         db.add(db_item)
-        # Update stock
-        price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
-        if item.size == "S":
-            price_stock.S_stock -= item.quantity
-        elif item.size == "M":
-            price_stock.M_stock -= item.quantity
-        elif item.size == "L":
-            price_stock.L_stock -= item.quantity
         db.commit()
-        db.refresh(price_stock)
 
     # Clear user's cart
     db.query(models.Cart).filter(models.Cart.user_id == order.user_id).delete()
@@ -563,7 +575,6 @@ def create_order_from_cart(db: Session, order: schemas.OrderCreate):
 
 
 
-from typing import Optional
 
 def has_user_reviewed_product(db: Session, user_id: int, product_id: str):
     """

@@ -234,10 +234,11 @@ interface ReviewTarget {
 }
 
 interface OrderItem {
+  product_id: string; // Added product_id
   product_name: string;
   quantity: number;
   size?: string;
-  price?: number; // Optional, as price might not be directly available
+  price?: number;
 }
 
 interface Order {
@@ -258,7 +259,6 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshToken, setRefreshToken] = useState(0);
-  // NEW: State to store review status for each order item
   const [reviewStatus, setReviewStatus] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
@@ -287,15 +287,14 @@ export default function Orders() {
         const data: Order[] = await response.json();
         setOrders(data);
 
-        // NEW: Batch-fetch review statuses for all items
         const statusMap: { [key: string]: boolean } = {};
         for (const order of data) {
           for (const item of order.products) {
-            const key = `${order.order_id}-${item.product_name}-${item.size ?? ""}`;
+            const key = `${order.order_id}-${item.product_id}-${item.size ?? ""}`;
             const reviewed = await hasReviewForOrderItem({
               userId,
               orderId: order.order_id,
-              productId: item.product_name,
+              productId: item.product_id, // Use product_id
               size: item.size,
             });
             statusMap[key] = reviewed;
@@ -339,10 +338,10 @@ export default function Orders() {
 
     const reviewData = {
       user_id: userId,
-      product_id: activeTarget.productId,
+      product_id: activeTarget.productId, // Use productId
       stars: rating,
       text: comment || undefined,
-      time: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+      time: new Date().toISOString().split('T')[0],
     };
 
     try {
@@ -356,7 +355,6 @@ export default function Orders() {
       if (!response.ok) {
         throw new Error(`Failed to create review: ${response.statusText}`);
       }
-      // NEW: Optimistically update the review status for this item after successful submit
       const key = `${activeTarget.orderId}-${activeTarget.productId}-${activeTarget.size ?? ""}`;
       setReviewStatus((prev) => ({ ...prev, [key]: true }));
       setRefreshToken((prev) => prev + 1);
@@ -406,13 +404,12 @@ export default function Orders() {
               </div>
               <ul className="space-y-2">
                 {o.products.map((item) => {
-                  // NEW: Use the pre-fetched status from state
-                  const key = `${o.order_id}-${item.product_name}-${item.size ?? ""}`;
-                  const reviewed = reviewStatus[key] ?? false; // Default to false if not loaded
+                  const key = `${o.order_id}-${item.product_id}-${item.size ?? ""}`;
+                  const reviewed = reviewStatus[key] ?? false;
 
                   return (
                     <li
-                      key={`${item.product_name}-${item.size ?? ""}`}
+                      key={`${item.product_id}-${item.size ?? ""}`}
                       className="flex flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:gap-3"
                     >
                       <span>
@@ -429,7 +426,7 @@ export default function Orders() {
                           onClick={() =>
                             openReviewDialog({
                               orderId: o.order_id,
-                              productId: item.product_name, // Using product_name as productId
+                              productId: item.product_id, // Use product_id
                               productName: item.product_name,
                               size: item.size,
                             })
