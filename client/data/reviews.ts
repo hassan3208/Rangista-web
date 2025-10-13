@@ -108,6 +108,7 @@
 
 
 import type { CartItem } from "@/context/CartContext";
+import { API_BASE_URL } from "@/lib/api-config";
 
 export type Review = {
   id: string;
@@ -166,7 +167,7 @@ function matchesKey(review: Review, key: ReviewKeyInput) {
 // Fetch reviews from API
 async function fetchReviewsByProduct(productId: string): Promise<Review[]> {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/products/${productId}/reviews`);
+    const response = await fetch(`${API_BASE_URL}/products/${productId}/reviews`);
     if (!response.ok) {
       if (response.status === 404) return [];
       throw new Error("Failed to fetch reviews");
@@ -234,7 +235,7 @@ export function createReview(input: CreateReviewInput): Review {
   };
 
   // Send review to API
-  fetch("http://127.0.0.1:8000/reviews/", {
+  fetch(`${API_BASE_URL}/reviews/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

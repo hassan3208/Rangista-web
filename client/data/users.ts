@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "@/lib/api-config";
+
 export type StoredUser = {
   id: string;
   name: string;
@@ -6,7 +8,7 @@ export type StoredUser = {
 };
 
 // API base URL (update if needed)
-const API_BASE_URL = "http://localhost:8000"; // your FastAPI backend
+// const API_BASE_URL = "http://localhost:8000"; // your FastAPI backend
 
 // Fetch all users from API
 export async function listAllUsers(): Promise<StoredUser[]> {

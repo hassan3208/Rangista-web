@@ -145,7 +145,7 @@ export default function Header() {
           <CartSheet />
           {user ? (
             <div className="flex items-center gap-2">
-              <span className="hidden sm:block text-sm">Hi, {user.name.split(" ")[0]}</span>
+              <span className="hidden sm:block text-sm">Hi, {user?.name?.split(" ")[0] ?? "User"}</span>
               <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => navigate("/profile")}>
                 <User className="h-5 w-5" />
               </Button>

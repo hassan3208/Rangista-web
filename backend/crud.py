@@ -12,41 +12,65 @@ pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 # -------------------------
 # USER FUNCTIONS
 # -------------------------
+
+def get_user_by_login(db: Session, login: str):
+    return db.query(models.User).filter(
+        (models.User.username == login) |
+        (models.User.email == login) |
+        (models.User.contact_number == login)
+    ).first()
+
+
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
-def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+def get_user_by_email(db: Session, email: str): 
+    return db.query(models.User).filter(models.User.email == email).first()  
 
 def get_all_users(db: Session):
     return db.query(models.User).all()
 
-def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = pwd_context.hash(user.password)
-    db_user = models.User(
-        name=user.name,
-        username=user.username,
-        email=user.email,
-        hashed_password=hashed_password,
-        disabled=False,
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+def create_user(db: Session, user: schemas.UserCreate): 
+    hashed_password = pwd_context.hash(user.password) 
+    db_user = models.User( 
+        name=user.name, 
+        username=user.username, 
+        email=user.email, 
+        hashed_password=hashed_password, 
+        disabled=False, 
+        contact_number=user.contact_number, 
+        permanent_address=user.permanent_address, 
+        country=user.country, 
+        city=user.city, 
+        contact_number_2=user.contact_number_2
+    ) 
+    db.add(db_user) 
+    db.commit() 
+    db.refresh(db_user) 
     return db_user
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-def update_user(db: Session, db_user: models.User, updates: schemas.UserUpdate):
-    if updates.email is not None:
-        db_user.email = updates.email
-    if updates.full_name is not None:
-        db_user.full_name = updates.full_name
-    if updates.disabled is not None:
-        db_user.disabled = updates.disabled
-    db.commit()
-    db.refresh(db_user)
+def update_user(db: Session, db_user: models.User, updates: schemas.UserUpdate): 
+    if updates.email is not None: 
+        db_user.email = updates.email 
+    if updates.full_name is not None: 
+        db_user.name = updates.full_name 
+    if updates.disabled is not None: 
+        db_user.disabled = updates.disabled 
+    if updates.contact_number is not None: 
+        db_user.contact_number = updates.contact_number 
+    if updates.permanent_address is not None: 
+        db_user.permanent_address = updates.permanent_address 
+    if updates.country is not None: 
+        db_user.country = updates.country 
+    if updates.city is not None: 
+        db_user.city = updates.city 
+    if updates.contact_number_2 is not None: 
+        db_user.contact_number_2 = updates.contact_number_2
+    db.commit() 
+    db.refresh(db_user) 
     return db_user
 
 # -------------------------
@@ -192,10 +216,12 @@ def get_all_orders(db: Session):
     Fetch all orders from all users with product details.
     Each order contains:
     - order_id
+    - user_id
     - username
     - status
     - total_products
-    - products: list of {product_name, quantity, size, product_id}
+    - total_price
+    - products: list of {product_name, quantity, size, product_id, price}
     - order_time
     """
     orders = db.query(models.Order).all()
@@ -203,22 +229,33 @@ def get_all_orders(db: Session):
 
     for order in orders:
         username = order.user.username
-        products_list = [
-            schemas.OrderProduct(
-                product_name=item.product.name,
-                quantity=item.quantity,
-                size=item.size,
-                product_id=item.product_id  # Add product_id here
-            )
-            for item in order.items
-        ]
+        products_list = []
+        total_price = 0
+        for item in order.items:
+            price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+            if price_stock:
+                price = (
+                    price_stock.S_price if item.size == "S" else
+                    price_stock.M_price if item.size == "M" else
+                    price_stock.L_price
+                )
+                products_list.append(schemas.OrderProduct(
+                    product_name=item.product.name,
+                    quantity=item.quantity,
+                    size=item.size,
+                    product_id=item.product_id,
+                    price=price * item.quantity
+                ))
+                total_price += price * item.quantity
         total_products = sum(item.quantity for item in order.items)
         order_responses.append(
             schemas.OrderResponse(
                 order_id=order.id,
+                user_id=order.user_id,  # Added user_id
                 username=username,
                 status=order.status,
                 total_products=total_products,
+                total_price=total_price,  # Added total_price
                 products=products_list,
                 order_time=order.time
             )
@@ -233,29 +270,78 @@ def get_user_orders(db: Session, user_id: int):
     if not user:
         return []
     orders_list = []
-    orders = db.query(Order).filter(Order.user_id == user_id).all()
+    orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.time.desc(), Order.id.desc()).all()
     for order in orders:
         products = []
         total_products = 0
+        total_price = 0
         for item in order.items:
             product = db.query(Product).filter(Product.id == item.product_id).first()
-            if product:
+            price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+            if product and price_stock:
+                price = (
+                    price_stock.S_price if item.size == "S" else
+                    price_stock.M_price if item.size == "M" else
+                    price_stock.L_price
+                )
                 products.append(schemas.OrderProduct(
                     product_name=product.name,
                     quantity=item.quantity,
                     size=item.size,
-                    product_id=item.product_id
+                    product_id=item.product_id,
+                    price=price * item.quantity
                 ))
                 total_products += item.quantity
+                total_price += price * item.quantity
         orders_list.append(schemas.OrderResponse(
             order_id=order.id,
+            user_id=user.id,
             username=user.username,
             status=order.status,
             total_products=total_products,
+            total_price=total_price,
             products=products,
             order_time=order.time
         ))
     return orders_list
+
+# ------------------------- 
+# GET ORDER 
+# ------------------------- 
+def get_order(db: Session, order_id: int):
+    order = db.query(models.Order).filter(models.Order.id == order_id).first()
+    if not order:
+        return None
+    username = order.user.username
+    products_list = []
+    total_price = 0
+    for item in order.items:
+        price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+        if price_stock:
+            price = (
+                price_stock.S_price if item.size == "S" else
+                price_stock.M_price if item.size == "M" else
+                price_stock.L_price
+            )
+            products_list.append(schemas.OrderProduct(
+                product_name=item.product.name,
+                quantity=item.quantity,
+                size=item.size,
+                product_id=item.product_id,
+                price=price * item.quantity
+            ))
+            total_price += price * item.quantity
+    total_products = sum(item.quantity for item in order.items)
+    return schemas.OrderResponse(
+        order_id=order.id,
+        user_id=order.user_id,
+        username=username,
+        status=order.status,
+        total_products=total_products,
+        total_price=total_price,
+        products=products_list,
+        order_time=order.time
+    )
 
 # -------------------------
 # NEW CRUD FUNCTIONS
@@ -277,21 +363,32 @@ def get_order(db: Session, order_id: int):
     if not order:
         return None
     username = order.user.username
-    products_list = [
-        schemas.OrderProduct(
-            product_name=item.product.name,
-            quantity=item.quantity,
-            size=item.size,
-            product_id=item.product_id  # Add product_id here
-        )
-        for item in order.items
-    ]
+    products_list = []
+    total_price = 0
+    for item in order.items:
+        price_stock = db.query(models.PriceAndStock).filter(models.PriceAndStock.product_id == item.product_id).first()
+        if price_stock:
+            price = (
+                price_stock.S_price if item.size == "S" else
+                price_stock.M_price if item.size == "M" else
+                price_stock.L_price
+            )
+            products_list.append(schemas.OrderProduct(
+                product_name=item.product.name,
+                quantity=item.quantity,
+                size=item.size,
+                product_id=item.product_id,
+                price=price * item.quantity
+            ))
+            total_price += price * item.quantity
     total_products = sum(item.quantity for item in order.items)
     return schemas.OrderResponse(
         order_id=order.id,
+        user_id=order.user_id,
         username=username,
         status=order.status,
         total_products=total_products,
+        total_price=total_price,
         products=products_list,
         order_time=order.time
     )

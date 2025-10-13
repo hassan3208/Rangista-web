@@ -9,6 +9,11 @@ class UserBase(BaseModel):
     name: Optional[str] = None
     username: str
     email: EmailStr
+    contact_number: str 
+    permanent_address: str 
+    country: str 
+    city: str 
+    contact_number_2: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -31,6 +36,11 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     disabled: Optional[bool] = None
+    contact_number: Optional[str] = None 
+    permanent_address: Optional[str] = None 
+    country: Optional[str] = None 
+    city: Optional[str] = None 
+    contact_number_2: Optional[str] = None
 
 # -------------------------
 # PRODUCT & REVIEW SCHEMAS
@@ -108,12 +118,15 @@ class OrderProduct(BaseModel):
     quantity: int
     size: str
     product_id: str
+    price: int  # Added price field
 
 class OrderResponse(BaseModel):
     order_id: int
+    user_id: int  # Added user_id field
     username: str
     status: str
     total_products: int
+    total_price: int  # Added total_price field
     products: List[OrderProduct]
     order_time: date
 

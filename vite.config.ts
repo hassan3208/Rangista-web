@@ -7,8 +7,9 @@ import { createServer } from "./server";
 export default defineConfig(({ mode }) => ({
   root: "client", // ✅ tell Vite your index.html lives in client/
   server: {
-    host: "::",
+    host: "0.0.0.0",
     port: 8080,
+    // allowedHosts: ["localhost", "five-pens-talk.loca.lt", "slimy-facts-glow.loca.lt"],
     fs: {
       allow: [
         path.resolve(__dirname, "client"),  // ✅ absolute path

@@ -26,8 +26,8 @@ def get_db():
     finally:
         db.close()
 
-async def authenticate_user(db: Session, username: str, password: str):
-    user = crud.get_user_by_username(db, username)
+async def authenticate_user(db: Session, login: str, password: str):
+    user = crud.get_user_by_login(db, login)
     if not user:
         return False
     if not crud.verify_password(password, user.hashed_password):
@@ -44,13 +44,13 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        login: str = payload.get("sub")
+        if login is None:
             raise credentials_exception
-        token_data = schemas.TokenData(username=username)
+        token_data = schemas.TokenData(username=login)  # Updated to use 'username' field
     except JWTError:
         raise credentials_exception
-    user = crud.get_user_by_username(db, token_data.username)
+    user = crud.get_user_by_login(db, token_data.username)
     if user is None:
         raise credentials_exception
     return user

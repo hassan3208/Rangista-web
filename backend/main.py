@@ -13,6 +13,14 @@ origins = [
     # Add your deployed frontend URL later
 ]
 
+
+# origins = [
+#     "https://slimy-facts-glow.loca.lt",  # your frontend URL
+#     "https://five-pens-talk.loca.lt",  # If using Vite
+#     # Add your deployed frontend URL later
+# ]
+
+
 app = FastAPI(title='User Management API')
 
 app.add_middleware(
@@ -35,6 +43,7 @@ def signup(user: schemas.UserCreate, db: Session = Depends(auth.get_db)):
     return crud.create_user(db, user)
 
 # Signin (login)
+# Signin (login)
 @app.post("/signin", response_model=schemas.Token)
 async def signin(
     form_data: Annotated[auth.OAuth2PasswordRequestForm, Depends()],
@@ -44,12 +53,13 @@ async def signin(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect login credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=auth.ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = auth.create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username},  # Ensure 'sub' contains the username
+        expires_delta=access_token_expires
     )
     return schemas.Token(access_token=access_token, token_type="bearer")
 

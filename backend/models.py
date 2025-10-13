@@ -14,6 +14,11 @@ class User(Base):
     name = Column(String, nullable=False)
     hashed_password = Column(String, nullable=False)
     disabled = Column(Boolean, default=False)
+    contact_number = Column(String, nullable=False) 
+    permanent_address = Column(String, nullable=False) 
+    country = Column(String, nullable=False) 
+    city = Column(String, nullable=False) 
+    contact_number_2 = Column(String, nullable=True) 
 
     # Relationships
     reviews = relationship("Review", back_populates="user", cascade="all, delete")
