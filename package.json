@@ -2,6 +2,7 @@
   "name": "fusion-starter",
   "private": true,
   "type": "module",
+  "homepage": "https://hassan3208.github.io/rangista-web",
   "pkg": {
     "assets": [
       "dist/spa/*"
@@ -18,7 +19,11 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+
+
+    "predeploy": "cd client && npm run build",
+    "deploy": "gh-pages -d dist/spa/"
   },
   "dependencies": {
     "axios": "^1.12.2",
@@ -75,6 +80,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.12",
+    "gh-pages": "^6.3.0",
     "globals": "^16.3.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.539.0",
