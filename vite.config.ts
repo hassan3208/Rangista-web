@@ -6,7 +6,7 @@ import { createServer } from "./server";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   root: "client", // ✅ tell Vite your index.html lives in client/
-  base: "/rangistawbsite/",
+  base: "/",
   server: {
     host: "0.0.0.0",
     port: 8080,
