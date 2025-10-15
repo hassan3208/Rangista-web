@@ -14,18 +14,18 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/netlify/functions/api.ts"
+      "source": "/api/(.*)",
+      "destination": "/netlify/functions/api.ts"
     },
     {
-      "src": "/server/(.*)",
-      "dest": "/server/index.ts"
+      "source": "/server/(.*)",
+      "destination": "/server/index.ts"
     },
     {
-      "src": "/(.*)",
-      "dest": "/dist/spa/index.html"
+      "source": "/(.*)",
+      "destination": "/dist/spa/index.html"
     }
   ],
   "cleanUrls": true,
