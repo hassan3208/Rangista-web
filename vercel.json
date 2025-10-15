@@ -1,33 +1,33 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dist/spa/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "netlify/functions/*.ts",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "server/**/*.ts",
-      "use": "@vercel/node"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/netlify/functions/api.ts"
-    },
-    {
-      "source": "/server/(.*)",
-      "destination": "/server/index.ts"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/dist/spa/index.html"
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+       "version": 2,
+       "builds": [
+         {
+           "src": "dist/spa/**",
+           "use": "@vercel/static"
+         },
+         {
+           "src": "netlify/functions/*.ts",
+           "use": "@vercel/node"
+         },
+         {
+           "src": "server/**/*.ts",
+           "use": "@vercel/node"
+         }
+       ],
+       "rewrites": [
+         {
+           "source": "/api/(.*)",
+           "destination": "/netlify/functions/api.ts"
+         },
+         {
+           "source": "/server/(.*)",
+           "destination": "/server/index.ts"
+         },
+         {
+           "source": "/(.*)",
+           "destination": "/dist/spa/index.html"
+         }
+       ],
+       "cleanUrls": true,
+       "trailingSlash": false
 }
