@@ -19,7 +19,8 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-
+    "preview": "vite preview",
+    
 
     "predeploy": "cd client && npm run build",
     "deploy": "gh-pages -d dist/spa/"
