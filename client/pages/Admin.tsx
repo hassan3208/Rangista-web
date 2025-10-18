@@ -282,7 +282,7 @@ import {
 const ALLOWED_ADMIN_EMAILS = new Set([
   "l1f22bscs1019@ucp.edu.pk",
   "itsmywork1019@gmail.com",
-  "Rangistaarttowear@gmail.com",
+  "rangistaarttowear@gmail.com",
 ]);
 
 interface OrderProduct {
