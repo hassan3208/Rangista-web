@@ -144,27 +144,58 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const LS_USER_KEY = "rangista_user";
+const LS_TOKEN_KEY = "token";
 const API_BASE = API_BASE_URL; // FastAPI backend URL
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, check localStorage for logged-in user
+  // Check for token, clean localStorage, and attempt to log in on mount
   useEffect(() => {
-    // const raw = localStorage.getItem(LS_USER_KEY);
-    const raw = sessionStorage.getItem(LS_USER_KEY);
+    // Clean localStorage: remove all keys except 'rangista_favorites' and 'token'
+    Object.keys(localStorage).forEach((key) => {
+      if (key !== "rangista_favorites" && key !== LS_TOKEN_KEY) {
+        console.log(`🗑️ Removing unauthorized localStorage key: ${key}`);
+        localStorage.removeItem(key);
+      }
+    });
 
-    if (raw) {
-      const parsedUser = JSON.parse(raw);
-      console.log("✅ Parsed user object:", parsedUser);
-      setUser(parsedUser);
+    const token = localStorage.getItem(LS_TOKEN_KEY);
+    if (token) {
+      console.log("✅ Found token in localStorage, attempting to fetch user...");
+      axios
+        .get(`${API_BASE}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          const userData = response.data;
+          console.log("✅ Fetched user data:", userData);
+          sessionStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+          setUser(userData);
+        })
+        .catch((error) => {
+          console.log("⚠️ Token-based login failed:", error.response?.data || error.message);
+          localStorage.removeItem(LS_TOKEN_KEY); // Remove invalid token
+          sessionStorage.removeItem(LS_USER_KEY); // Clear user data
+        })
+        .finally(() => {
+          setLoading(false);
+          console.log("⏳ Loading set to false");
+        });
     } else {
-      console.log("⚠️ No user found in localStorage");
+      // Check sessionStorage for user data if no token is found
+      const raw = sessionStorage.getItem(LS_USER_KEY);
+      if (raw) {
+        const parsedUser = JSON.parse(raw);
+        console.log("✅ Parsed user object from sessionStorage:", parsedUser);
+        setUser(parsedUser);
+      } else {
+        console.log("⚠️ No token or user found");
+      }
+      setLoading(false);
+      console.log("⏳ Loading set to false");
     }
-
-    setLoading(false);
-    console.log("⏳ Loading set to false");
   }, []);
 
   // Signup function
@@ -203,7 +234,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         contact_number_2,
       });
       const userData = response.data; // backend returns UserResponse
-      // localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       sessionStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
@@ -216,7 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (login: string, password: string) => {
     try {
       const formData = new URLSearchParams();
-      formData.append("username", login); // Backend now accepts username, email, or contact_number
+      formData.append("username", login); // Backend accepts username, email, or contact_number
       formData.append("password", password);
 
       const response = await axios.post(`${API_BASE}/signin`, formData, {
@@ -224,14 +254,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const token = response.data.access_token;
-      localStorage.setItem("token", token);
+      localStorage.setItem(LS_TOKEN_KEY, token);
 
       // Fetch current user info
       const userResp = await axios.get(`${API_BASE}/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const userData = userResp.data;
-      // localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       sessionStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
@@ -241,9 +270,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout function
   const logout = () => {
-    // localStorage.removeItem(LS_USER_KEY);
     sessionStorage.removeItem(LS_USER_KEY);
-    localStorage.removeItem("token");
+    localStorage.removeItem(LS_TOKEN_KEY);
     setUser(null);
   };
 
