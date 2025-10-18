@@ -17,7 +17,7 @@ function normalizePercent(p: number | undefined): DiscountPercent {
 
 // By default, no discounts are active. Uncomment lines to enable.
 export const DISCOUNTS: Record<string, DiscountPercent> = {
-//   "Eid Collection": 20,
+  "Eid Collection": 20,
 //   "Bakra Eid Specials": 30,
 //   "14 August Independence Collection": 40,
   // "Birthday Specials": 20,
