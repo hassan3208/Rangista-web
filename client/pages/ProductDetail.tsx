@@ -10,6 +10,7 @@ import { listReviewsByProduct, type Review } from "@/data/reviews";
 import { Star } from "lucide-react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import SizeChartDialog from "@/components/SizeChartDialog";
+import { getDiscountForCollection, applyDiscount } from "@/data/discount";
 
 type SizeKey = "XS" | "S" | "M" | "L" | "XL" | "XXL" | "Kids";
 
@@ -135,6 +136,26 @@ export default function ProductDetail() {
 
   const canAdd = stock > 0 && !!size;
 
+  // compute selected price and discount for UI
+  const selectedPriceOriginal = size
+    ? size === "XS"
+      ? product.XS_price
+      : size === "S"
+      ? product.S_price
+      : size === "M"
+      ? product.M_price
+      : size === "L"
+      ? product.L_price
+      : size === "XL"
+      ? product.XL_price
+      : size === "XXL"
+      ? product.XXL_price
+      : product.S_price
+    : product.S_price;
+
+  const detailDiscountPercent = getDiscountForCollection(product.collection as string);
+  const selectedPrice = detailDiscountPercent > 0 ? applyDiscount(selectedPriceOriginal, detailDiscountPercent) : selectedPriceOriginal;
+
   const onAdd = () => {
     if (!canAdd || !size) return;
     const savedUser = sessionStorage.getItem("rangista_user");
@@ -142,27 +163,16 @@ export default function ProductDetail() {
       navigate("/login");
       return;
     }
-    const price =
-      size === "XS"
-        ? product.XS_price
-        : size === "S"
-        ? product.S_price
-        : size === "M"
-        ? product.M_price
-        : size === "L"
-        ? product.L_price
-        : size === "XL"
-        ? product.XL_price
-        : size === "XXL"
-        ? product.XXL_price
-        : product.S_price;
-    addItem({ id: product.id, name: product.name, price, image: product.image, size, collection: product.collection }, 1);
+    addItem({ id: product.id, name: product.name, price: selectedPrice, image: product.image, size, collection: product.collection }, 1);
   };
 
   return (
     <main className="container py-10 grid md:grid-cols-2 gap-6 md:gap-10">
       {/* Carousel for images */}
       <div className="relative">
+        {detailDiscountPercent > 0 ? (
+          <div className="absolute left-3 top-3 z-20 rounded-sm bg-destructive px-2 py-1 text-xs font-semibold text-destructive-foreground">-{detailDiscountPercent}%</div>
+        ) : null}
         <Carousel className="w-full">
           <CarouselContent>
             {[product.image, ...(product.images ?? [])].map((img, index) => (
@@ -195,23 +205,14 @@ export default function ProductDetail() {
         </div>
         <div className="space-y-1">
           <h2 className="text-2xl font-bold">
-            {size
-              ? formatPKR(
-                  size === "XS"
-                    ? product.XS_price
-                    : size === "S"
-                    ? product.S_price
-                    : size === "M"
-                    ? product.M_price
-                    : size === "L"
-                    ? product.L_price
-                    : size === "XL"
-                    ? product.XL_price
-                    : size === "XXL"
-                    ? product.XXL_price
-                    : product.S_price
-                )
-              : formatPKR(product.S_price)}
+            {detailDiscountPercent > 0 ? (
+              <div className="flex items-baseline gap-3">
+                <span className="text-sm text-muted-foreground line-through">{formatPKR(selectedPriceOriginal)}</span>
+                <span className="text-2xl font-bold">{formatPKR(selectedPrice)}</span>
+              </div>
+            ) : (
+              <span>{formatPKR(selectedPriceOriginal)}</span>
+            )}
           </h2>
           <p className="text-sm text-muted-foreground">
             {size === "Kids" ? (
