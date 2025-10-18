@@ -1,18 +1,11 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "dist/spa/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "outputDirectory": "dist/spa"
+       "version": 2,
+       "rewrites": [
+         {
+           "source": "/(.*)",
+           "destination": "/dist/spa/index.html"
+         }
+       ],
+       "cleanUrls": true,
+       "trailingSlash": false
 }
