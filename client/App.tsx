@@ -5,7 +5,8 @@
 // import { Toaster as Sonner } from "@/components/ui/sonner";
 // import { TooltipProvider } from "@/components/ui/tooltip";
 // import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
+// import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+// import { useEffect } from "react";
 // import Index from "./pages/Index";
 // import NotFound from "./pages/NotFound";
 // import Header from "@/components/layout/Header";
@@ -27,48 +28,60 @@
 
 // const queryClient = new QueryClient();
 
+// const Root = () => {
+//   const navigate = useNavigate();
+
+//   useEffect(() => {
+//     navigate("/", { replace: true });
+//   }, []);
+
+//   return (
+//     <AuthProvider>
+//       <FavoritesProvider>
+//         <CartProvider>
+//           <div className="min-h-screen flex flex-col">
+//             <Header />
+//             <div className="flex-1">
+//               <Routes>
+//                 <Route path="/" element={<Index />} />
+//                 <Route path="/login" element={<Login />} />
+//                 <Route path="/signup" element={<Signup />} />
+//                 <Route path="/about" element={<About />} />
+//                 <Route path="/contact" element={<Contact />} />
+//                 <Route path="/product/:id" element={<ProductDetail />} />
+//                 <Route path="/admin" element={
+//                   <Admin/>
+//                   // <ProtectedRoute>
+//                   //   <Admin />
+//                   // </ProtectedRoute>
+//                 } />
+//                 <Route path="/favorites" element={<Favorites />} />
+//                 <Route path="/orders" element={<Orders />} />
+//                 <Route path="/profile" element={
+//                   <ProtectedRoute>
+//                     <Profile />
+//                   </ProtectedRoute>
+//                 } />
+//                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+//                 <Route path="*" element={<NotFound />} />
+//               </Routes>
+//             </div>
+//             <Footer />
+//             <WhatsAppButton />
+//           </div>
+//         </CartProvider>
+//       </FavoritesProvider>
+//     </AuthProvider>
+//   );
+// };
+
 // const App = () => (
 //   <QueryClientProvider client={queryClient}>
 //     <TooltipProvider>
 //       <Toaster />
 //       <Sonner />
 //       <BrowserRouter>
-//         <AuthProvider>
-//           <FavoritesProvider>
-//             <CartProvider>
-//               <div className="min-h-screen flex flex-col">
-//               <Header />
-//               <div className="flex-1">
-//                 <Routes>
-//                   <Route path="/" element={<Index />} />
-//                   <Route path="/login" element={<Login />} />
-//                   <Route path="/signup" element={<Signup />} />
-//                   <Route path="/about" element={<About />} />
-//                   <Route path="/contact" element={<Contact />} />
-//                   <Route path="/product/:id" element={<ProductDetail />} />
-//                   <Route path="/admin" element={
-//                     <Admin/>
-//                     // <ProtectedRoute>
-//                     //   <Admin />
-//                     // </ProtectedRoute>
-//                   } />
-//                   <Route path="/favorites" element={<Favorites />} />
-//                   <Route path="/orders" element={<Orders />} />
-//                   <Route path="/profile" element={
-//                     <ProtectedRoute>
-//                       <Profile />
-//                     </ProtectedRoute>
-//                   } />
-//                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-//                   <Route path="*" element={<NotFound />} />
-//                 </Routes>
-//               </div>
-//               <Footer />
-//               <WhatsAppButton />
-//             </div>
-//             </CartProvider>
-//           </FavoritesProvider>
-//         </AuthProvider>
+//         <Root />
 //       </BrowserRouter>
 //     </TooltipProvider>
 //   </QueryClientProvider>
@@ -181,4 +194,10 @@ const App = () => (
   </QueryClientProvider>
 );
 
-createRoot(document.getElementById("root")!).render(<App />);
+{
+  const container = document.getElementById("root")!;
+  const w = window as any;
+  const root = w.__appRoot ?? createRoot(container);
+  w.__appRoot = root;
+  root.render(<App />);
+}
