@@ -6,7 +6,7 @@ import { getProducts } from "@/data/catalog";
 import { useSearchParams } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
-// Add custom CSS for carousel with mirror-like arrow buttons
+// Add custom CSS for carousel with transparent mirror-like arrow buttons
 const carouselStyles = `
   .carousel-container {
     position: relative;
@@ -27,24 +27,25 @@ const carouselStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1); /* Highly transparent background */
+    backdrop-filter: blur(8px); /* Frosted glass effect */
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle reflective border */
     border-radius: 50%;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.5);
-    color: #fff;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 10px rgba(0, 0, 0, 0.2); /* Inner highlight and soft shadow */
+    color: #ffffff; /* White arrow icons for high contrast */
     transition: all 0.3s ease;
   }
   .carousel-prev:hover,
   .carousel-next:hover {
-    background: linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.2));
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.2); /* Slightly brighter on hover */
+    box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3); /* Enhanced shadow on hover */
   }
-  .carousel-prev {
-    left: 0;
-  }
-  .carousel-next {
-    right: 0;
+  .carousel-prev svg,
+  .carousel-next svg {
+    fill: #ffffff; /* Ensure arrow icons are white */
+    stroke: #ffffff; /* Ensure stroke is white for visibility */
+    width: 1.5rem;
+    height: 1.5rem;
   }
   @media (max-width: 640px) {
     .carousel-container {
@@ -54,6 +55,11 @@ const carouselStyles = `
     .carousel-next {
       width: 2rem;
       height: 2rem;
+    }
+    .carousel-prev svg,
+    .carousel-next svg {
+      width: 1.2rem;
+      height: 1.2rem;
     }
   }
 `;
@@ -91,18 +97,8 @@ export default function Index() {
       if (filters.collection && filters.collection !== "all" && p.collection !== filters.collection) return false;
       if (filters.size && filters.size !== "all") {
         const stockKey = `${filters.size}_stock` as keyof typeof p;
-        const raw = p[stockKey];
-        let stock = 0;
-        if (typeof raw === "number") {
-          stock = raw;
-        } else if (typeof raw === "string") {
-          stock = parseInt(raw, 10) || 0;
-        } else if (typeof raw === "boolean") {
-          stock = raw ? 1 : 0;
-        } else {
-          stock = 0;
-        }
-        if (stock <= 0) return false;
+        const stockValue = Number(p[stockKey]);
+        if (isNaN(stockValue) || stockValue <= 0) return false;
       }
       if (filters.kids && !p.kids) return false;
       return true;
