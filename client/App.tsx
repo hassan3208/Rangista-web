@@ -119,9 +119,10 @@ const App = () => (
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/admin" element={
-                    <ProtectedRoute>
-                      <Admin />
-                    </ProtectedRoute>
+                    <Admin/>
+                    // <ProtectedRoute>
+                    //   <Admin />
+                    // </ProtectedRoute>
                   } />
                   <Route path="/favorites" element={<Favorites />} />
                   <Route path="/orders" element={<Orders />} />
