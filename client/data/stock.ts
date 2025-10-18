@@ -161,7 +161,8 @@ type StockMap = Record<string, SizeStock>;
 
 function readStock(): StockMap {
   try {
-    const raw = localStorage.getItem(LS_STOCK);
+    // const raw = localStorage.getItem(LS_STOCK);
+    const raw = sessionStorage.getItem(LS_STOCK);
     if (!raw) return {};
     return JSON.parse(raw) as StockMap;
   } catch {
@@ -170,7 +171,8 @@ function readStock(): StockMap {
 }
 
 function writeStock(map: StockMap) {
-  localStorage.setItem(LS_STOCK, JSON.stringify(map));
+  // localStorage.setItem(LS_STOCK, JSON.stringify(map));
+  sessionStorage.setItem(LS_STOCK, JSON.stringify(map));
   try {
     window.dispatchEvent(new CustomEvent("stock:change"));
   } catch {}

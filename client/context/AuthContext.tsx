@@ -152,8 +152,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // On mount, check localStorage for logged-in user
   useEffect(() => {
-    const raw = localStorage.getItem(LS_USER_KEY);
-    console.log("🔹 useEffect triggered | Raw user from localStorage:", raw);
+    // const raw = localStorage.getItem(LS_USER_KEY);
+    const raw = sessionStorage.getItem(LS_USER_KEY);
 
     if (raw) {
       const parsedUser = JSON.parse(raw);
@@ -203,7 +203,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         contact_number_2,
       });
       const userData = response.data; // backend returns UserResponse
-      localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+      // localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+      sessionStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
       console.log("Signup error:", error.response?.data);
@@ -230,7 +231,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const userData = userResp.data;
-      localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+      // localStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
+      sessionStorage.setItem(LS_USER_KEY, JSON.stringify(userData));
       setUser(userData);
     } catch (error: any) {
       throw new Error(error.response?.data?.detail || "Login failed");
@@ -239,7 +241,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Logout function
   const logout = () => {
-    localStorage.removeItem(LS_USER_KEY);
+    // localStorage.removeItem(LS_USER_KEY);
+    sessionStorage.removeItem(LS_USER_KEY);
     localStorage.removeItem("token");
     setUser(null);
   };

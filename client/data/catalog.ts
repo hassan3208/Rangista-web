@@ -244,7 +244,8 @@ const BASE_BY_ID = new Map(PRODUCTS.map((p) => [p.id, p] as const));
 
 function readJSON<T>(key: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem(key);
+    // const raw = localStorage.getItem(key);
+    const raw = sessionStorage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : fallback;
   } catch {
     return fallback;
@@ -252,7 +253,8 @@ function readJSON<T>(key: string, fallback: T): T {
 }
 
 function writeJSON<T>(key: string, value: T) {
-  localStorage.setItem(key, JSON.stringify(value));
+  // localStorage.setItem(key, JSON.stringify(value));
+  sessionStorage.setItem(key, JSON.stringify(value));
 }
 
 function ensureCatalogInitialized() {

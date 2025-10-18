@@ -6,7 +6,8 @@ export function cartKeyForUser(userId: string) {
 
 export function readUserCart(userId: string): CartItem[] {
   try {
-    const raw = localStorage.getItem(cartKeyForUser(userId));
+    // const raw = localStorage.getItem(cartKeyForUser(userId));
+    const raw = sessionStorage.getItem(cartKeyForUser(userId));
     return raw ? (JSON.parse(raw) as CartItem[]) : [];
   } catch {
     return [];
@@ -14,7 +15,8 @@ export function readUserCart(userId: string): CartItem[] {
 }
 
 export function writeUserCart(userId: string, items: CartItem[]) {
-  localStorage.setItem(cartKeyForUser(userId), JSON.stringify(items));
+  // localStorage.setItem(cartKeyForUser(userId), JSON.stringify(items));
+  sessionStorage.setItem(cartKeyForUser(userId), JSON.stringify(items));
   try {
     window.dispatchEvent(new CustomEvent("cart:change", { detail: { userId } }));
   } catch {}

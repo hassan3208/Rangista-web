@@ -1,6 +1,6 @@
 // import { useState } from "react";
 // import { Link, NavLink, useNavigate } from "react-router-dom";
-// import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+// import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 // import { Button } from "@/components/ui/button";
 // import { Input } from "@/components/ui/input";
 // import { Menu, User, LogOut, Home, Heart, Info, Phone, ShoppingBag } from "lucide-react";
@@ -10,10 +10,11 @@
 //   const { user, logout } = useAuth();
 //   const navigate = useNavigate();
 //   const [q, setQ] = useState("");
+//   const [open, setOpen] = useState(false);
 
 //   return (
 //     <div className="md:hidden">
-//       <Sheet>
+//       <Sheet open={open} onOpenChange={setOpen}>
 //         <SheetTrigger asChild>
 //           <Button variant="ghost" size="icon" aria-label="Open menu">
 //             <Menu className="h-5 w-5" />
@@ -40,31 +41,20 @@
 //                     const next = `${window.location.pathname}?${params.toString()}`;
 //                     window.history.replaceState(null, "", next);
 //                     navigate("/");
+//                     setOpen(false);
 //                   }
 //                 }}
 //               />
 //             </div>
 
 //             <nav className="flex flex-col">
-//               <SheetClose asChild>
-//                 <NavItem to="/" label="Home" icon={<Home className="h-4 w-4" />} />
-//               </SheetClose>
-//               <SheetClose asChild>
-//                 <NavItem to="/about" label="About" icon={<Info className="h-4 w-4" />} />
-//               </SheetClose>
-//               <SheetClose asChild>
-//                 <NavItem to="/contact" label="Contact" icon={<Phone className="h-4 w-4" />} />
-//               </SheetClose>
-//               <SheetClose asChild>
-//                 <NavItem to="/favorites" label="Favorites" icon={<Heart className="h-4 w-4" />} />
-//               </SheetClose>
-//               <SheetClose asChild>
-//                 <NavItem to="/orders" label="Orders" icon={<ShoppingBag className="h-4 w-4" />} />
-//               </SheetClose>
+//               <NavItem to="/" label="Home" icon={<Home className="h-4 w-4" />} onClick={() => setOpen(false)} />
+//               <NavItem to="/about" label="About" icon={<Info className="h-4 w-4" />} onClick={() => setOpen(false)} />
+//               <NavItem to="/contact" label="Contact" icon={<Phone className="h-4 w-4" />} onClick={() => setOpen(false)} />
+//               <NavItem to="/favorites" label="Favorites" icon={<Heart className="h-4 w-4" />} onClick={() => setOpen(false)} />
+//               <NavItem to="/orders" label="Orders" icon={<ShoppingBag className="h-4 w-4" />} onClick={() => setOpen(false)} />
 //               {user && (
-//                 <SheetClose asChild>
-//                   <NavItem to="/profile" label="Profile" icon={<User className="h-4 w-4" />} />
-//                 </SheetClose>
+//                 <NavItem to="/profile" label="Profile" icon={<User className="h-4 w-4" />} onClick={() => setOpen(false)} />
 //               )}
 //             </nav>
 
@@ -72,18 +62,14 @@
 //               {user ? (
 //                 <>
 //                   <div className="text-sm">Hi, {user.name?.split(" ")[0] || user.email}</div>
-//                   <Button size="sm" variant="outline" className="ml-auto" onClick={() => { logout(); }}>
+//                   <Button size="sm" variant="outline" className="ml-auto" onClick={() => { logout(); setOpen(false); }}>
 //                     <LogOut className="mr-1 h-4 w-4" /> Logout
 //                   </Button>
 //                 </>
 //               ) : (
 //                 <div className="flex gap-2 w-full">
-//                   <SheetClose asChild>
-//                     <Button className="flex-1" onClick={() => navigate("/login")}>Login</Button>
-//                   </SheetClose>
-//                   <SheetClose asChild>
-//                     <Button variant="outline" className="flex-1" onClick={() => navigate("/signup")}>Sign up</Button>
-//                   </SheetClose>
+//                   <Button className="flex-1" onClick={() => { navigate("/login"); setOpen(false); }}>Login</Button>
+//                   <Button variant="outline" className="flex-1" onClick={() => { navigate("/signup"); setOpen(false); }}>Sign up</Button>
 //                 </div>
 //               )}
 //             </div>
@@ -94,9 +80,9 @@
 //   );
 // }
 
-// function NavItem({ to, label, icon }: { to: string; label: string; icon?: React.ReactNode }) {
+// function NavItem({ to, label, icon, onClick }: { to: string; label: string; icon?: React.ReactNode; onClick?: () => void }) {
 //   return (
-//     <Link to={to} className="flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted">
+//     <Link to={to} onClick={onClick} className="flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-muted">
 //       {icon}
 //       <span>{label}</span>
 //     </Link>
@@ -105,13 +91,36 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Menu, User, LogOut, Home, Heart, Info, Phone, ShoppingBag } from "lucide-react";
+import { Menu, User, LogOut, Home, Heart, Info, Phone, ShoppingBag, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+
+const ALLOWED_ADMIN_EMAILS = new Set([
+  "l1f22bscs1019@ucp.edu.pk",
+  "itsmywork1019@gmail.com",
+]);
 
 export default function MobileNav() {
   const { user, logout } = useAuth();
@@ -162,6 +171,9 @@ export default function MobileNav() {
               <NavItem to="/orders" label="Orders" icon={<ShoppingBag className="h-4 w-4" />} onClick={() => setOpen(false)} />
               {user && (
                 <NavItem to="/profile" label="Profile" icon={<User className="h-4 w-4" />} onClick={() => setOpen(false)} />
+              )}
+              {user && ALLOWED_ADMIN_EMAILS.has(user.email) && (
+                <NavItem to="/admin" label="Admin" icon={<Shield className="h-4 w-4" />} onClick={() => setOpen(false)} />
               )}
             </nav>
 

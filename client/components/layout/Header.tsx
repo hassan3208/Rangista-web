@@ -10,7 +10,7 @@
 
 // export default function Header() {
 //   const { user, logout } = useAuth();
-//   const { totalProducts } = useCart(); // Use totalProducts instead of count
+//   const { totalProducts } = useCart();
 //   const navigate = useNavigate();
 //   const location = useLocation();
 //   const [params, setParams] = useSearchParams();
@@ -33,7 +33,7 @@
 //           <MobileNav />
 //           <Link to="/" className="flex items-center gap-2">
 //             <img src="https://i.postimg.cc/KYZqc2Yr/Screenshot-2025-10-02-105818.png" alt="Rangista Logo" className="h-9 w-9 rounded-full bg-accent" />
-//             <div className="leading-tight hidden xs:block">
+//             <div className="leading-tight hidden md:block">
 //               <div className="font-hand text-xl text-accent">Rangista</div>
 //               <div className="-mt-1 text-xs text-muted-foreground">Hand-Painted Fashion</div>
 //             </div>
@@ -53,7 +53,7 @@
 //           <CartSheet />
 //           {user ? (
 //             <div className="flex items-center gap-2">
-//               <span className="hidden sm:block text-sm">Hi, {user.name.split(" ")[0]}</span>
+//               <span className="hidden sm:block text-sm">Hi, {user?.name?.split(" ")[0] ?? "User"}</span>
 //               <Button variant="ghost" size="icon" aria-label="Profile" onClick={() => navigate("/profile")}>
 //                 <User className="h-5 w-5" />
 //               </Button>
@@ -90,6 +90,13 @@
 
 
 
+
+
+
+
+
+
+
 import { Link, NavLink, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -99,6 +106,11 @@ import { useCart } from "@/context/CartContext";
 import { cn } from "@/lib/utils";
 import { User } from "lucide-react";
 import MobileNav from "@/components/layout/MobileNav";
+
+const ALLOWED_ADMIN_EMAILS = new Set([
+  "l1f22bscs1019@ucp.edu.pk",
+  "itsmywork1019@gmail.com",
+]);
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -137,6 +149,9 @@ export default function Header() {
           <NavItem to="/contact" label="Contact" />
           <NavItem to="/favorites" label="Favorites" />
           <NavItem to="/orders" label="Orders" />
+          {user && ALLOWED_ADMIN_EMAILS.has(user.email) && (
+            <NavItem to="/admin" label="Admin" />
+          )}
         </nav>
         <div className="flex items-center gap-2">
           <div className="hidden sm:block">

@@ -140,7 +140,8 @@ type CreateReviewInput = ReviewKeyInput & {
 // Local storage fallback for reading reviews
 function read(): Review[] {
   try {
-    const raw = localStorage.getItem(LS_REVIEWS);
+    // const raw = localStorage.getItem(LS_REVIEWS);
+    const raw = sessionStorage.getItem(LS_REVIEWS);
     return raw ? (JSON.parse(raw) as Review[]) : [];
   } catch {
     return [];
@@ -149,7 +150,8 @@ function read(): Review[] {
 
 // Local storage write (kept for createReview compatibility)
 function write(list: Review[]) {
-  localStorage.setItem(LS_REVIEWS, JSON.stringify(list));
+  // localStorage.setItem(LS_REVIEWS, JSON.stringify(list));
+  sessionStorage.setItem(LS_REVIEWS, JSON.stringify(list));
   try {
     window.dispatchEvent(new CustomEvent("reviews:change"));
   } catch {}

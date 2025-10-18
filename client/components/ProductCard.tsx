@@ -626,7 +626,8 @@ export default function ProductCard({
     setShowCartEmoji(true);
     setTimeout(() => setShowCartEmoji(false), 2000); // Hide after 2s animation
 
-    const savedUser = localStorage.getItem("rangista_user");
+    // const savedUser = localStorage.getItem("rangista_user");
+    const savedUser = sessionStorage.getItem("rangista_user");
     if (!savedUser) {
       navigate("/login");
       return;

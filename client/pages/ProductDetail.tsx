@@ -1132,7 +1132,8 @@ export default function ProductDetail() {
 
   const onAdd = () => {
     if (!canAdd || !size) return;
-    const savedUser = localStorage.getItem("rangista_user");
+    // const savedUser = localStorage.getItem("rangista_user");
+    const savedUser = sessionStorage.getItem("rangista_user");
     if (!savedUser) {
       navigate("/login");
       return;
