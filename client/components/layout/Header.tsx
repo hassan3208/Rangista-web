@@ -107,11 +107,22 @@ import { cn } from "@/lib/utils";
 import { User } from "lucide-react";
 import MobileNav from "@/components/layout/MobileNav";
 
-const ALLOWED_ADMIN_EMAILS = new Set([
-  "l1f22bscs1019@ucp.edu.pk",
-  "itsmywork1019@gmail.com",
-  "rangistaarttowear@gmail.com"
-]);
+// const ALLOWED_ADMIN_EMAILS = new Set([
+//   "l1f22bscs1019@ucp.edu.pk",
+//   "itsmywork1019@gmail.com",
+//   "rangistaarttowear@gmail.com"
+// ]);
+
+
+
+
+
+const ALLOWED_ADMIN_EMAILS = new Set(
+  (import.meta.env.VITE_ALLOWED_ADMIN_EMAILS || "")
+    .split(",")
+    .map((email: string) => email.trim())
+    .filter((email: string) => email)
+);
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -155,9 +166,9 @@ export default function Header() {
           )}
         </nav>
         <div className="flex items-center gap-2">
-          <div className="hidden sm:block">
+          {/* <div className="hidden sm:block">
             <Input placeholder="Search products" className="w-48" value={q} onChange={(e) => onSearch(e.target.value)} />
-          </div>
+          </div> */}
           <CartSheet />
           {user ? (
             <div className="flex items-center gap-2">

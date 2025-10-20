@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
         path.resolve(__dirname, "client"),  // ✅ absolute path
         path.resolve(__dirname, "shared"),  // ✅ absolute path
       ],
-      deny: [".env", ".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
+      deny: [".env.*", "*.{crt,pem}", "**/.git/**", "server/**"],
     },
   },
   build: {

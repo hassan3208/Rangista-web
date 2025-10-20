@@ -117,11 +117,21 @@ import { Input } from "@/components/ui/input";
 import { Menu, User, LogOut, Home, Heart, Info, Phone, ShoppingBag, Shield } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
-const ALLOWED_ADMIN_EMAILS = new Set([
-  "l1f22bscs1019@ucp.edu.pk",
-  "itsmywork1019@gmail.com",
-  "rangistaarttowear@gmail.com"
-]);
+// const ALLOWED_ADMIN_EMAILS = new Set([
+//   "l1f22bscs1019@ucp.edu.pk",
+//   "itsmywork1019@gmail.com",
+//   "rangistaarttowear@gmail.com"
+// ]);
+
+
+const ALLOWED_ADMIN_EMAILS = new Set(
+  (import.meta.env.VITE_ALLOWED_ADMIN_EMAILS || "")
+    .split(",")
+    .map((email: string) => email.trim())
+    .filter((email: string) => email)
+);
+
+
 
 export default function MobileNav() {
   const { user, logout } = useAuth();
@@ -146,7 +156,7 @@ export default function MobileNav() {
           </SheetHeader>
 
           <div className="mt-4 space-y-4">
-            <div>
+            {/* <div>
               <Input
                 placeholder="Search products"
                 value={q}
@@ -162,7 +172,7 @@ export default function MobileNav() {
                   }
                 }}
               />
-            </div>
+            </div> */}
 
             <nav className="flex flex-col">
               <NavItem to="/" label="Home" icon={<Home className="h-4 w-4" />} onClick={() => setOpen(false)} />

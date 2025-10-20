@@ -1069,11 +1069,23 @@ const COLLECTIONS = [
   "Birthday Specials",
 ] as const;
 
-const ALLOWED_ADMIN_EMAILS = new Set([
-  "l1f22bscs1019@ucp.edu.pk",
-  "itsmywork1019@gmail.com",
-  "rangistaarttowear@gmail.com",
-]);
+// const ALLOWED_ADMIN_EMAILS = new Set([
+//   "l1f22bscs1019@ucp.edu.pk",
+//   "itsmywork1019@gmail.com",
+//   "rangistaarttowear@gmail.com",
+// ]);
+
+
+
+const ALLOWED_ADMIN_EMAILS = new Set(
+  (import.meta.env.VITE_ALLOWED_ADMIN_EMAILS || "")
+    .split(",")
+    .map((email: string) => email.trim())
+    .filter((email: string) => email)
+);
+
+
+
 
 interface ProductFormData {
   id: string;
@@ -1218,7 +1230,7 @@ export default function Admin() {
           />
           <Button
             onClick={() => {
-              if (pass.trim() === "4321") setUnlocked(true);
+              if (pass.trim() === import.meta.env.VITE_ADMIN_PASSWORD) setUnlocked(true);
               else alert("Incorrect password");
             }}
           >
