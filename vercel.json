@@ -2,10 +2,18 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/spa",
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "^/(.*\\.)(?:js|css|gif|ico|jpg|jpeg|png|svg|webp|woff|woff2)$",
+      "headers": {
+        "cache-control": "public, immutable, max-age=31536000"
+      },
+      "continue": true
+    },
+    {
+      "src": "^/(.*)$",
+      "dest": "/index.html",
+      "status": 200
     }
   ],
   "cleanUrls": true,
