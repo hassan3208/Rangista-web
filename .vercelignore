@@ -1,0 +1,15 @@
+.git
+.gitignore
+README.md
+node_modules
+.env
+.env.local
+.env.*.local
+pnpm-lock.yaml
+package-lock.json
+*.test.ts
+*.spec.ts
+.DS_Store
+dist/server
+server/
+vite.config.server.ts
