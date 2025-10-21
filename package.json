@@ -20,6 +20,8 @@
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
     "preview": "vite preview",
+    
+
     "predeploy": "cd client && npm run build",
     "deploy": "gh-pages -d dist/spa/"
   },
@@ -27,7 +29,6 @@
     "axios": "^1.12.2",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
-    "firebase": "^12.4.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
