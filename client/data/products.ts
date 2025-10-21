@@ -213,7 +213,7 @@ export type Product = {
   name: string;
   image: string;
   images?: string[];
-  collection: "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials";
+  collection: "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection";
   description?: string;
   total_reviews: number;
   average_rating: number;
@@ -256,10 +256,18 @@ async function fetchProducts() {
 fetchProducts();
 
 export const COLLECTIONS = [
-  "Eid Collection",
-  "Bakra Eid Specials",
-  "14 August Independence Collection",
-  "Birthday Specials",
+  "✨ Bestsellers Edit",
+  "🌸 New Arrivals",
+  "❄ Winter Wonders",
+  "☀ Summer Bloom",
+  "💍 The Wedding Season",
+  "🌙 Eid Collection",
+  "🐐 Bakra Eid Edit",
+  "Azadi Collection",
+  "👩‍🍼 Mommy & Me",
+  "👗 Adults Collection",
+  "🎨 Handpainted Dupattas Collection",
 ] as const;
+
 
 export const SIZES = ["XS", "S", "M", "L", "XL", "XXL"] as const;

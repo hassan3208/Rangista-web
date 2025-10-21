@@ -681,8 +681,8 @@ export default function Index() {
     });
   }, [filters, q, products]);
 
-  const eid = filtered.filter((p) => p.collection === "Eid Collection");
-  const azadi = filtered.filter((p) => p.collection === "14 August Independence Collection");
+  const eid = filtered.filter((p) => p.collection === "✨ Bestsellers Edit");
+  const azadi = filtered.filter((p) => p.collection === "🌸 New Arrivals");
 
   return (
     <main>
@@ -694,13 +694,13 @@ export default function Index() {
           .banner-section {
             position: relative;
             width: 100%;
-            min-height: 400px;
+            min-height: 540px;
           }
 
           .banner-image {
             position: relative;
             width: 100%;
-            min-height: 400px;
+            min-height: 540px;
             overflow: hidden;
           }
 
@@ -768,7 +768,7 @@ export default function Index() {
                     id={p.id}
                     name={p.name}
                     image={p.image}
-                    collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+                    collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
                     total_reviews={p.total_reviews}
                     average_rating={p.average_rating}
                     XS_price={p.XS_price}
@@ -795,7 +795,7 @@ export default function Index() {
       </section>
 
       <section className="container py-16">
-        <h2 className="font-serif text-3xl">Featured Eid Collection</h2>
+        <h2 className="font-serif text-3xl">Featured Bestsellers Edit</h2>
         <div className="mt-6 carousel-container">
           <Carousel opts={{ loop: true }} className="w-full">
             <CarouselContent className="carousel-content">
@@ -805,7 +805,7 @@ export default function Index() {
                     id={p.id}
                     name={p.name}
                     image={p.image}
-                    collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+                    collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
                     total_reviews={p.total_reviews}
                     average_rating={p.average_rating}
                     XS_price={p.XS_price}
@@ -832,7 +832,7 @@ export default function Index() {
       </section>
 
       <section className="container py-16">
-        <h2 className="font-serif text-3xl">14 August Specials</h2>
+        <h2 className="font-serif text-3xl">New Arrivals</h2>
         <div className="mt-6 carousel-container">
           <Carousel opts={{ loop: true }} className="w-full">
             <CarouselContent className="carousel-content">
@@ -842,7 +842,7 @@ export default function Index() {
                     id={p.id}
                     name={p.name}
                     image={p.image}
-                    collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+                    collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
                     total_reviews={p.total_reviews}
                     average_rating={p.average_rating}
                     XS_price={p.XS_price}

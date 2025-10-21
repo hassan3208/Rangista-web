@@ -20,7 +20,7 @@ export default function Favorites() {
               id={p.id}
               name={p.name}
               image={p.image}
-              collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+              collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
               total_reviews={p.total_reviews}
               average_rating={p.average_rating}
               XS_price={p.XS_price}

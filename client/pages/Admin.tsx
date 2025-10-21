@@ -1467,10 +1467,17 @@ import {
 } from "@/components/ui/select";
 
 const COLLECTIONS = [
-  "Eid Collection",
-  "Bakra Eid Specials",
-  "14 August Independence Collection",
-  "Birthday Specials",
+  "✨ Bestsellers Edit",
+  "🌸 New Arrivals",
+  "❄ Winter Wonders",
+  "☀ Summer Bloom",
+  "💍 The Wedding Season",
+  "🌙 Eid Collection",
+  "🐐 Bakra Eid Edit",
+  "Azadi Collection",
+  "👩‍🍼 Mommy & Me",
+  "👗 Adults Collection",
+  "🎨 Handpainted Dupattas Collection"
 ] as const;
 
 // const ALLOWED_ADMIN_EMAILS = new Set([

@@ -1,7 +1,7 @@
 import React from "react";
 
 export default function WhatsAppButton() {
-  const phone = "923230825561"; // international format without +
+  const phone = "923340677883"; // international format without +
   const href = `https://wa.me/${phone}?text=${encodeURIComponent(
     "Hello! I have a question about Rangista."
   )}`;

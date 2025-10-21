@@ -61,11 +61,19 @@ function normalizePercent(p: number | undefined): DiscountPercent {
 
 // By default, no discounts are active. Uncomment lines to enable.
 export const DISCOUNTS: Record<string, DiscountPercent> = {
-  "Eid Collection": 20,
-//   "Bakra Eid Specials": 30,
-//   "14 August Independence Collection": 40,
-  // "Birthday Specials": 20,
+  // "✨ Bestsellers Edit": 20,
+  // "🌸 New Arrivals": 15,
+  // "❄ Winter Wonders": 25,
+  // "☀ Summer Bloom": 20,
+  // "💍 The Wedding Season": 30,
+  "🌙 Eid Collection": 20,
+  // "🐐 Bakra Eid Edit": 25,
+  // "Azadi Collection": 40,
+  // "👩‍🍼 Mommy & Me": 10,
+  // "👗 Adults Collection": 15,
+  // "🎨 Handpainted Dupattas Collection": 20,
 };
+
 
 export function getDiscountForCollection(collection?: string): DiscountPercent {
   if (!collection) return 0;

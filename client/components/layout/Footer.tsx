@@ -5,14 +5,14 @@ export default function Footer() {
         <div>
           <div className="font-hand text-2xl text-accent">Rangista</div>
           <p className="mt-2 text-sm text-muted-foreground max-w-sm">
-            Artsy, traditional fashion for women and children. Hand-painted, made with love.
+            Rangista — where every outfit is a piece of art, made just for your little one. Hand-painted with love, crafted with care, and designed to make every moment magical. 🎨💖
           </p>
         </div>
         <div>
           <div className="font-medium mb-2">Contact</div>
           <ul className="space-y-1 text-sm">
-            <li>WhatsApp: <a className="underline" href="https://wa.me/923328425042" target="_blank" rel="noreferrer">03328425042</a></li>
-            <li>Email: <a className="underline" href="mailto:itsmywork1019@gmail.com">itsmywork1019@gmail.com</a></li>
+            <li>WhatsApp: <a className="underline" href="https://wa.me/923340677883" target="_blank" rel="noreferrer">03340677883</a></li>
+            <li>Email: <a className="underline" href="mailto:rangistaarttowear@gmail.com">rangistaarttowear@gmail.com</a></li>
           </ul>
         </div>
         <div>
@@ -20,6 +20,7 @@ export default function Footer() {
           <ul className="space-y-1 text-sm">
             <li><a className="underline" href="https://www.facebook.com/profile.php?id=100065230491278" target="_blank" rel="noreferrer">Facebook</a></li>
             <li><a className="underline" href="https://www.instagram.com/_rangista/" target="_blank" rel="noreferrer">Instagram</a></li>
+            <li><a className="underline" href="https://pin.it/6NW4U2K" target="_blank" rel="noreferrer">Pinterest</a></li>
           </ul>
         </div>
       </div>
