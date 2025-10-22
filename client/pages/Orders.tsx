@@ -210,6 +210,8 @@
 // //                     <span className="text-xs text-muted-foreground">Total: {formatPKR(o.total_price)}</span>
 // //                   ) : o.status === "canceled" ? (
 // //                     <span className="text-xs text-muted-foreground">Canceled (Original Total: {formatPKR(o.total_price)})</span>
+// //                   ) : o.status === "delivered" ? (
+// //                     <span className="text-xs text-muted-foreground">Paid: {formatPKR(o.total_price)}</span>
 // //                   ) : (
 // //                     <span className="text-xs text-muted-foreground">
 // //                       Paid: {formatPKR(o.total_price * 0.5)} | Remaining: {formatPKR(o.total_price * 0.5)}
@@ -342,9 +344,25 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // import { FormEvent, useMemo, useState, useEffect } from "react";
 // import { useAuth } from "@/context/AuthContext";
 // import { formatPKR } from "@/lib/currency";
+// import { getDiscountForCollection, applyDiscount } from "@/data/discount";
+// import { getProduct } from "@/data/catalog";
 // import { Button } from "@/components/ui/button";
 // import { API_BASE_URL } from "@/lib/api-config";
 // import {
@@ -550,17 +568,34 @@
 //                 <div className="flex flex-col">
 //                   <span className="text-sm font-medium">Order #{o.order_id}</span>
 //                   <span className="text-xs text-muted-foreground">{o.order_time}</span>
-//                   {o.status === "pending" ? (
-//                     <span className="text-xs text-muted-foreground">Total: {formatPKR(o.total_price)}</span>
-//                   ) : o.status === "canceled" ? (
-//                     <span className="text-xs text-muted-foreground">Canceled (Original Total: {formatPKR(o.total_price)})</span>
-//                   ) : o.status === "delivered" ? (
-//                     <span className="text-xs text-muted-foreground">Paid: {formatPKR(o.total_price)}</span>
-//                   ) : (
-//                     <span className="text-xs text-muted-foreground">
-//                       Paid: {formatPKR(o.total_price * 0.5)} | Remaining: {formatPKR(o.total_price * 0.5)}
-//                     </span>
-//                   )}
+//                   {(() => {
+//                     // Recompute displayed total using discounts when possible
+//                     const computedTotal = o.products.reduce((s, item) => {
+//                       const qty = item.quantity || 1;
+//                       const prod = getProduct(String(item.product_id));
+//                       const pct = prod ? getDiscountForCollection(prod.collection) : 0;
+//                       const unit = qty > 0 ? Number(item.price) / qty : Number(item.price);
+//                       const discountedUnit = applyDiscount(unit, pct);
+//                       const line = Math.round(discountedUnit * qty);
+//                       return s + line;
+//                     }, 0);
+
+//                     if (o.status === "pending") {
+//                       return <span className="text-xs text-muted-foreground">Total: {formatPKR(computedTotal)}</span>;
+//                     }
+
+//                     if (o.status === "canceled") {
+//                       return <span className="text-xs text-muted-foreground">Canceled (Original Total: {formatPKR(o.total_price)})</span>;
+//                     }
+
+//                     if (o.status === "delivered") {
+//                       return <span className="text-xs text-muted-foreground">Paid: {formatPKR(computedTotal)}</span>;
+//                     }
+
+//                     return (
+//                       <span className="text-xs text-muted-foreground">Paid: {formatPKR(Math.round(computedTotal * 0.5))} | Remaining: {formatPKR(Math.round(computedTotal * 0.5))}</span>
+//                     );
+//                   })()}
 //                 </div>
 
 //                 {/* Right: dominant status pill */}
@@ -577,14 +612,22 @@
 //                   const key = `${o.order_id}-${item.product_id}-${item.size ?? ""}`;
 //                   const reviewed = reviewStatus[key] ?? false;
 
+//                   // Compute discounted line price when possible
+//                   const qty = item.quantity || 1;
+//                   const prod = getProduct(String(item.product_id));
+//                   const pct = prod ? getDiscountForCollection(prod.collection) : 0;
+//                   const unit = qty > 0 ? Number(item.price) / qty : Number(item.price);
+//                   const discountedUnit = applyDiscount(unit, pct);
+//                   const linePrice = Math.round(discountedUnit * qty);
+
 //                   return (
 //                     <li
 //                       key={`${item.product_id}-${item.size ?? ""}`}
 //                       className="flex flex-col gap-1 rounded-md border border-dashed p-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:gap-3"
 //                     >
 //                       <span>
-//                         {item.product_name} {item.size ? `(${item.size})` : ""} × {item.quantity} —{" "}
-//                         {formatPKR(item.price)}
+//                         {item.product_name} {item.size ? `(${item.size})` : ""} × {item.quantity} — {formatPKR(linePrice)}
+//                         {pct > 0 && <span className="ml-2 text-xs text-muted-foreground line-through">{formatPKR(Number(item.price))}</span>}
 //                       </span>
 //                       {reviewed ? (
 //                         <Button variant="secondary" size="sm" disabled>
@@ -680,6 +723,13 @@
 //     </main>
 //   );
 // }
+
+
+
+
+
+
+
 
 
 
@@ -910,7 +960,7 @@ export default function Orders() {
               <div className="flex items-center justify-between gap-4">
                 {/* Left: order info */}
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium">Order #{o.order_id}</span>
+                  <span className="text-sm font-medium">Order #R{o.order_id}{o.order_time.slice(-2)}</span>
                   <span className="text-xs text-muted-foreground">{o.order_time}</span>
                   {(() => {
                     // Recompute displayed total using discounts when possible
@@ -924,8 +974,18 @@ export default function Orders() {
                       return s + line;
                     }, 0);
 
+                    const totalQty = o.products.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                    const deliveryCharge = totalQty < 3 ? 300 : 0;
+                    const totalWithDelivery = computedTotal + deliveryCharge;
+
                     if (o.status === "pending") {
-                      return <span className="text-xs text-muted-foreground">Total: {formatPKR(computedTotal)}</span>;
+                      return (
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <span className="block">Subtotal: {formatPKR(computedTotal)}</span>
+                          {deliveryCharge > 0 && <span className="block text-orange-600">Delivery: {formatPKR(deliveryCharge)}</span>}
+                          <span className="block font-medium">Total: {formatPKR(totalWithDelivery)}</span>
+                        </div>
+                      );
                     }
 
                     if (o.status === "canceled") {
@@ -933,11 +993,22 @@ export default function Orders() {
                     }
 
                     if (o.status === "delivered") {
-                      return <span className="text-xs text-muted-foreground">Paid: {formatPKR(computedTotal)}</span>;
+                      return (
+                        <div className="text-xs text-muted-foreground space-y-1">
+                          <span className="block">Paid: {formatPKR(totalWithDelivery)}</span>
+                          {deliveryCharge > 0 && <span className="block text-sm text-orange-600">(includes {formatPKR(deliveryCharge)} delivery)</span>}
+                        </div>
+                      );
                     }
 
+                    const advance = Math.round(totalWithDelivery * 0.25);
                     return (
-                      <span className="text-xs text-muted-foreground">Paid: {formatPKR(Math.round(computedTotal * 0.5))} | Remaining: {formatPKR(Math.round(computedTotal * 0.5))}</span>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <span className="block">Subtotal: {formatPKR(computedTotal)}</span>
+                        {deliveryCharge > 0 && <span className="block text-orange-600">Delivery: {formatPKR(deliveryCharge)}</span>}
+                        <span className="block font-medium">Total: {formatPKR(totalWithDelivery)}</span>
+                        <span className="block">Paid: {formatPKR(advance)} | Remaining: {formatPKR(totalWithDelivery - advance)}</span>
+                      </div>
                     );
                   })()}
                 </div>

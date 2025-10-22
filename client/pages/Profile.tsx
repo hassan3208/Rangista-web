@@ -92,17 +92,19 @@ export default function Profile() {
         <div className="grid gap-2 text-sm">
           <div className="flex items-center gap-2">
             <IdCard className="h-4 w-4" />
-            <span className="text-muted-foreground">User ID:</span>
-            <span className="font-mono break-all">{user.id}</span>
+            {/* <span className="text-muted-foreground">User ID:</span> */}
+            {/* <span className="font-mono break-all">{user.id}</span> */}
           </div>
 
           <div className="mt-4 grid gap-2">
-            {Object.entries(user).map(([key, value]) => (
-              <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3">
-                <div className="w-full sm:w-36 text-sm text-muted-foreground">{toLabel(key)}:</div>
-                <div className="text-sm break-all">{renderValue(value)}</div>
-              </div>
-            ))}
+            {Object.entries(user)
+             .filter(([key]) => key !== "id") // 👈 filter out the id
+             .map(([key, value]) => (
+               <div key={key} className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-3">
+                 <div className="w-full sm:w-36 text-sm text-muted-foreground">{toLabel(key)}:</div>
+                 <div className="text-sm break-all">{renderValue(value)}</div>
+               </div>
+             ))}
           </div>
         </div>
       </div>

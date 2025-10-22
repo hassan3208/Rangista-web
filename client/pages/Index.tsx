@@ -11,7 +11,7 @@
 // //   .carousel-container {
 // //     position: relative;
 // //     width: 100%;
-// //     padding: 0 2.5rem; /* Space for arrows */
+// //     padding: 0 1rem; /* Minimal space for arrows on mobile */
 // //   }
 // //   .carousel-content {
 // //     margin: 0 -0.5rem; /* Adjust for item padding */
@@ -22,8 +22,8 @@
 // //     top: 50%;
 // //     transform: translateY(-50%);
 // //     z-index: 10;
-// //     width: 2.5rem;
-// //     height: 2.5rem;
+// //     width: 2rem;
+// //     height: 2rem;
 // //     display: flex;
 // //     align-items: center;
 // //     justify-content: center;
@@ -44,22 +44,22 @@
 // //   .carousel-next svg {
 // //     fill: #ffffff; /* Ensure arrow icons are white */
 // //     stroke: #ffffff; /* Ensure stroke is white for visibility */
-// //     width: 1.5rem;
-// //     height: 1.5rem;
+// //     width: 1.2rem;
+// //     height: 1.2rem;
 // //   }
-// //   @media (max-width: 640px) {
+// //   @media (min-width: 768px) {
 // //     .carousel-container {
-// //       padding: 0 1.5rem;
+// //       padding: 0 2.5rem;
 // //     }
 // //     .carousel-prev,
 // //     .carousel-next {
-// //       width: 2rem;
-// //       height: 2rem;
+// //       width: 2.5rem;
+// //       height: 2.5rem;
 // //     }
 // //     .carousel-prev svg,
 // //     .carousel-next svg {
-// //       width: 1.2rem;
-// //       height: 1.2rem;
+// //       width: 1.5rem;
+// //       height: 1.5rem;
 // //     }
 // //   }
 // // `;
@@ -153,7 +153,7 @@
 // //           <Carousel opts={{ loop: true }} className="w-full">
 // //             <CarouselContent className="carousel-content">
 // //               {filtered.map((p) => (
-// //                 <CarouselItem key={p.id} className="pl-2 basis-full sm:basis-1/2 lg:basis-1/3">
+// //                 <CarouselItem key={p.id} className="pl-2 basis-1/2 sm:basis-1/2 lg:basis-1/3">
 // //                   <ProductCard
 // //                     id={p.id}
 // //                     name={p.name}
@@ -190,7 +190,7 @@
 // //           <Carousel opts={{ loop: true }} className="w-full">
 // //             <CarouselContent className="carousel-content">
 // //               {eid.map((p) => (
-// //                 <CarouselItem key={p.id} className="pl-2 basis-full sm:basis-1/2 lg:basis-1/3">
+// //                 <CarouselItem key={p.id} className="pl-2 basis-1/2 sm:basis-1/2 lg:basis-1/3">
 // //                   <ProductCard
 // //                     id={p.id}
 // //                     name={p.name}
@@ -227,7 +227,7 @@
 // //           <Carousel opts={{ loop: true }} className="w-full">
 // //             <CarouselContent className="carousel-content">
 // //               {azadi.map((p) => (
-// //                 <CarouselItem key={p.id} className="pl-2 basis-full sm:basis-1/2 lg:basis-1/3">
+// //                 <CarouselItem key={p.id} className="pl-2 basis-1/2 sm:basis-1/2 lg:basis-1/3">
 // //                   <ProductCard
 // //                     id={p.id}
 // //                     name={p.name}
@@ -275,28 +275,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // import { useEffect, useMemo, useState } from "react";
 // import ProductCard from "@/components/ProductCard";
 // import FilterBar, { Filters } from "@/components/FilterBar";
@@ -310,7 +288,7 @@
 //   .carousel-container {
 //     position: relative;
 //     width: 100%;
-//     padding: 0 1rem; /* Minimal space for arrows on mobile */
+//     padding: 0; /* Minimal space for arrows on mobile */
 //   }
 //   .carousel-content {
 //     margin: 0 -0.5rem; /* Adjust for item padding */
@@ -404,45 +382,79 @@
 //     });
 //   }, [filters, q, products]);
 
-//   const eid = filtered.filter((p) => p.collection === "Eid Collection");
-//   const azadi = filtered.filter((p) => p.collection === "14 August Independence Collection");
+//   const eid = filtered.filter((p) => p.collection === "✨ Bestsellers Edit");
+//   const azadi = filtered.filter((p) => p.collection === "🌸 New Arrivals");
 
 //   return (
 //     <main>
 //       {/* Inline styles for carousel */}
 //       <style>{carouselStyles}</style>
 
-//       <section className="relative overflow-hidden">
-//         <div className="container py-16 grid gap-8 md:grid-cols-2 items-center">
-//           <div>
-//             <p className="text-accent font-hand text-xl">Rangista</p>
-//             <h1 className="mt-2 font-serif text-4xl md:text-5xl leading-tight">
-//               Hand-Painted Clothes for Women & Children
-//             </h1>
-//             <p className="mt-4 text-muted-foreground max-w-xl">
-//               Rangista brings you artsy and traditional fashion inspired by culture and crafted with love.
-//             </p>
-//             <div className="mt-6 flex gap-3">
-//               <a href="#shop" className="inline-flex items-center rounded-md bg-primary text-primary-foreground px-5 py-3">
-//                 Shop now
-//               </a>
-//               <a href="/about" className="inline-flex items-center rounded-md border px-5 py-3">
-//                 Learn more
-//               </a>
-//             </div>
-//           </div>
-//           <div className="relative w-full overflow-hidden rounded-2xl aspect-[4/3]">
-//             {heroImages.map((src, index) => (
-//               <img
-//                 key={index}
-//                 src={src}
-//                 alt={`Hero ${index + 1}`}
-//                 className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
-//                   index === currentHeroIndex ? "opacity-100" : "opacity-0"
-//                 }`}
-//               />
-//             ))}
-//           </div>
+//       <section className="banner-section relative w-full overflow-hidden bg-background">
+//         <style>{`
+//           .banner-section {
+//             position: relative;
+//             width: 100%;
+//             min-height: 540px;
+//           }
+
+//           .banner-image {
+//             position: relative;
+//             width: 100%;
+//             min-height: 540px;
+//             overflow: hidden;
+//           }
+
+//           .banner-image img {
+//             position: absolute;
+//             top: 0;
+//             left: 0;
+//             width: 100%;
+//             height: 100%;
+//             object-fit: cover;
+//             transition: opacity 1s ease-in-out;
+//           }
+
+//           .banner-image img.hidden {
+//             opacity: 0;
+//           }
+
+//           .banner-image img.active {
+//             opacity: 1;
+//             position: absolute;
+//           }
+
+//           @media (max-width: 768px) {
+//             .banner-section {
+//               min-height: 150px;
+//             }
+
+//             .banner-image {
+//               min-height: 150px;
+//             }
+//           }
+
+//           @media (max-width: 480px) {
+//             .banner-section {
+//               min-height: 125px;
+//             }
+
+//             .banner-image {
+//               min-height: 125px;
+//             }
+//           }
+//         `}</style>
+
+//         <div className="banner-image">
+//           {heroImages.map((src, index) => (
+//             <img
+//               key={index}
+//               decoding="async"
+//               src={src}
+//               alt="slider"
+//               className={index === currentHeroIndex ? "active" : "hidden"}
+//             />
+//           ))}
 //         </div>
 //       </section>
 
@@ -457,7 +469,7 @@
 //                     id={p.id}
 //                     name={p.name}
 //                     image={p.image}
-//                     collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+//                     collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
 //                     total_reviews={p.total_reviews}
 //                     average_rating={p.average_rating}
 //                     XS_price={p.XS_price}
@@ -484,7 +496,7 @@
 //       </section>
 
 //       <section className="container py-16">
-//         <h2 className="font-serif text-3xl">Featured Eid Collection</h2>
+//         <h2 className="font-serif text-3xl">Featured Bestsellers Edit</h2>
 //         <div className="mt-6 carousel-container">
 //           <Carousel opts={{ loop: true }} className="w-full">
 //             <CarouselContent className="carousel-content">
@@ -494,7 +506,7 @@
 //                     id={p.id}
 //                     name={p.name}
 //                     image={p.image}
-//                     collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+//                     collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
 //                     total_reviews={p.total_reviews}
 //                     average_rating={p.average_rating}
 //                     XS_price={p.XS_price}
@@ -521,7 +533,7 @@
 //       </section>
 
 //       <section className="container py-16">
-//         <h2 className="font-serif text-3xl">14 August Specials</h2>
+//         <h2 className="font-serif text-3xl">New Arrivals</h2>
 //         <div className="mt-6 carousel-container">
 //           <Carousel opts={{ loop: true }} className="w-full">
 //             <CarouselContent className="carousel-content">
@@ -531,7 +543,7 @@
 //                     id={p.id}
 //                     name={p.name}
 //                     image={p.image}
-//                     collection={p.collection as "Eid Collection" | "Bakra Eid Specials" | "14 August Independence Collection" | "Birthday Specials"}
+//                     collection={p.collection as "✨ Bestsellers Edit" | "🌸 New Arrivals" | "❄ Winter Wonders" | "☀ Summer Bloom" | "💍 The Wedding Season" | "🌙 Eid Collection" | "🐐 Bakra Eid Edit" | "Azadi Collection" | "👩‍🍼 Mommy & Me" | "👗 Adults Collection" | "🎨 Handpainted Dupattas Collection"}
 //                     total_reviews={p.total_reviews}
 //                     average_rating={p.average_rating}
 //                     XS_price={p.XS_price}
@@ -574,6 +586,16 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
 import { useEffect, useMemo, useState } from "react";
 import ProductCard from "@/components/ProductCard";
 import FilterBar, { Filters } from "@/components/FilterBar";
@@ -581,6 +603,7 @@ import Testimonials from "@/components/Testimonials";
 import { getProducts } from "@/data/catalog";
 import { useSearchParams } from "react-router-dom";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { motion } from "framer-motion";
 
 // Add custom CSS for carousel with transparent mirror-like arrow buttons
 const carouselStyles = `
@@ -689,7 +712,12 @@ export default function Index() {
       {/* Inline styles for carousel */}
       <style>{carouselStyles}</style>
 
-      <section className="banner-section relative w-full overflow-hidden bg-background">
+      <motion.section
+        className="banner-section relative w-full overflow-hidden bg-background"
+        initial={{ x: -100, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
         <style>{`
           .banner-section {
             position: relative;
@@ -755,7 +783,7 @@ export default function Index() {
             />
           ))}
         </div>
-      </section>
+      </motion.section>
 
       <section className="container py-10">
         <FilterBar filters={filters} onChange={setFilters} />
