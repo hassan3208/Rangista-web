@@ -667,9 +667,9 @@ export function CartSheet() {
                   <div className="rounded-lg bg-secondary p-3 text-sm">
                     <p className="font-medium">Amount to pay now: {formatPKR(advance)}</p>
                     {payment === "jazzcash" ? (
-                      <p className="mt-2">Send to JazzCash number 03240405762 and share screenshot on WhatsApp. We will verify and update your order status.</p>
+                      <p className="mt-2">Send to JazzCash number 03240405762 (MARIYEM NABEEL) and share screenshot on WhatsApp. We will verify and update your order status.</p>
                     ) : (
-                      <p className="mt-2">Transfer to Bank Account (shared after order confirmation). Email proof to rangistaarttowear@gmail.com. Alternatively you can send screenshot on WhatsApp.</p>
+                      <p className="mt-2">Transfer to Bank Account Bank AL Habib: PK03BAHL5509008101070301 (Maryam nabeel). Email proof to rangistaarttowear@gmail.com. Alternatively you can send screenshot on WhatsApp.</p>
                     )}
                   </div>
                   <Button onClick={onConfirm} disabled={!user}>I have paid the advance</Button>
