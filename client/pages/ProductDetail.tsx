@@ -828,7 +828,7 @@ export default function ProductDetail() {
           <CarouselContent>
             {[product.image, ...(product.images ?? [])].map((img, index) => (
               <CarouselItem key={index}>
-                <img src={img} alt={`${product.name} - Image ${index + 1}`} className="rounded-lg object-cover w-full aspect-[3/4]" />
+                <img src={img} alt={`${product.name} - Image ${index + 1}`} className="rounded-lg object-cover w-full aspect-[3/4] md:aspect-square" />
               </CarouselItem>
             ))}
           </CarouselContent>
