@@ -664,10 +664,8 @@ const carouselStyles = `
 `;
 
 const heroImages = [
-  "https://i.postimg.cc/9Q36JwXv/Screenshot-2025-10-02-105818.png",
-  "https://i.postimg.cc/VNsmW04j/Screenshot-2024-06-02-065610.png",
-  "https://i.postimg.cc/9Q36JwXv/Screenshot-2025-10-02-105818.png",
-  "https://i.postimg.cc/VNsmW04j/Screenshot-2024-06-02-065610.png",
+  "https://i.postimg.cc/ry7wnwh8/RANGISTA-BANNER.jpg",
+  "https://i.postimg.cc/JzrVPwC6/Screenshot-2025-11-08-133939.png",
 ];
 
 export default function Index() {
