@@ -720,13 +720,13 @@ export default function Index() {
           .banner-section {
             position: relative;
             width: 100%;
-            min-height: 540px;
+            min-height: 620px;
           }
 
           .banner-image {
             position: relative;
             width: 100%;
-            min-height: 540px;
+            min-height: 620px;
             overflow: hidden;
           }
 
