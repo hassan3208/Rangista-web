@@ -755,7 +755,7 @@ export default function Index() {
             }
 
             .banner-image {
-              min-height: 150px;
+              min-height: 300px;
             }
           }
 
@@ -765,7 +765,7 @@ export default function Index() {
             }
 
             .banner-image {
-              min-height: 125px;
+              min-height: 220px;
             }
           }
         `}</style>
