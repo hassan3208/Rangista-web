@@ -707,6 +707,12 @@ export default function Index() {
 
   return (
     <main>
+      {/* === ADD THIS BLOCK HERE === */}
+      <div className="bg-black text-white text-center py-2 text-xs md:text-sm font-medium tracking-wider">
+        Order will deliver within 15 days
+      </div>
+
+      
       {/* Inline styles for carousel */}
       <style>{carouselStyles}</style>
 
