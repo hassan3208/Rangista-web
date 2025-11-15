@@ -707,10 +707,35 @@ export default function Index() {
 
   return (
     <main>
-      {/* === ADD THIS BLOCK HERE === */}
-      <div className="bg-black text-white text-center py-2 text-xs md:text-sm font-medium tracking-wider">
-        Order will deliver within 15 days
+      {/* === RUNNING HEADLINE START === */}
+      <div className="bg-black text-white overflow-hidden whitespace-nowrap">
+        <div className="inline-block animate-marquee py-2">
+          <span className="mx-4 text-xs md:text-sm font-medium tracking-wider">
+            Order will deliver within 15 days
+          </span>
+          <span className="mx-4 text-xs md:text-sm font-medium tracking-wider">
+            Order will deliver within 15 days
+          </span>
+          <span className="mx-4 text-xs md:text-sm font-medium tracking-wider">
+            Order will deliver within 15 days
+          </span>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0%);
+          }
+          100% {
+            transform: translateX(-33.333%);
+          }
+        }
+        .animate-marquee {
+          animation: marquee 12s linear infinite;
+        }
+      `}</style>
+      {/* === RUNNING HEADLINE END === */}
 
       
       {/* Inline styles for carousel */}
