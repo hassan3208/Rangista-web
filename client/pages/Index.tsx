@@ -664,8 +664,8 @@ const carouselStyles = `
 `;
 
 const heroImages = [
-  "https://i.postimg.cc/ry7wnwh8/RANGISTA-BANNER.jpg",
-  "https://i.postimg.cc/JzrVPwC6/Screenshot-2025-11-08-133939.png",
+  "https://kinoqnxhesqzhvstrxtn.supabase.co/storage/v1/object/sign/product%20images/boy%20rangista%20landpage-01.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8yN2EzNThlOS1hZDQzLTQ4ZGEtYjAzYy04OWJhOTc0MDRkOTciLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0IGltYWdlcy9ib3kgcmFuZ2lzdGEgbGFuZHBhZ2UtMDEuanBnIiwiaWF0IjoxNzYzMjQ0NTM4LCJleHAiOjE3OTQ3ODA1Mzh9.SAllM_74Utfo6q0hyvNkCZyX_yO4gsTb4Ysa8FswSsM",
+  "https://kinoqnxhesqzhvstrxtn.supabase.co/storage/v1/object/sign/product%20images/GUL%20PARI%20RANGISTA%20LANDING%20PAGE%201-01.jpg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8yN2EzNThlOS1hZDQzLTQ4ZGEtYjAzYy04OWJhOTc0MDRkOTciLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0IGltYWdlcy9HVUwgUEFSSSBSQU5HSVNUQSBMQU5ESU5HIFBBR0UgMS0wMS5qcGciLCJpYXQiOjE3NjMyNDQ1OTYsImV4cCI6MTc5NDc4MDU5Nn0.LIlbhpivAfExeJIUE9wfYEUYg4ECEsxHDsUoTgaA3V0",
 ];
 
 export default function Index() {
